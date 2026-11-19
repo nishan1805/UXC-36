@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { AlertTriangle, ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRef, useState, type FormEvent } from "react";
 import { EVENT_CONFIG } from "@/lib/event-config";
+import { adminSignIn } from "@/lib/registration-service";
 
 interface AdminLoginGateProps {
   onUnlock: () => void;
@@ -15,9 +16,13 @@ export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitLockRef = useRef(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitLockRef.current) return;
 
     const trimmedEmail = email.trim();
     let hasError = false;
@@ -43,7 +48,18 @@ export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
       return;
     }
 
-    onUnlock();
+    submitLockRef.current = true;
+    setIsSubmitting(true);
+    setFormError(null);
+    try {
+      await adminSignIn(trimmedEmail, password);
+      onUnlock();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Unable to sign in. Please try again.");
+    } finally {
+      submitLockRef.current = false;
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -74,7 +90,13 @@ export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
 
           {/* Login Form */}
           <div className="p-6 sm:p-8">
-            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            <form
+              onSubmit={(event) => {
+                void handleSubmit(event);
+              }}
+              className="space-y-5"
+              noValidate
+            >
               <div>
                 <label
                   htmlFor="admin-email"
@@ -92,6 +114,7 @@ export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (emailError) setEmailError(null);
+                    if (formError) setFormError(null);
                   }}
                   placeholder="Enter your admin email"
                   aria-invalid={Boolean(emailError)}
@@ -130,6 +153,7 @@ export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
                     onChange={(e) => {
                       setPassword(e.target.value);
                       if (passwordError) setPasswordError(null);
+                      if (formError) setFormError(null);
                     }}
                     placeholder="Enter your password."
                     aria-invalid={Boolean(passwordError)}
@@ -164,11 +188,25 @@ export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
                 )}
               </div>
 
+              {formError && (
+                <p
+                  role="alert"
+                  className="flex items-start gap-1.5 text-xs font-bold text-destructive"
+                >
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>{formError}</span>
+                </p>
+              )}
+
               <button
                 type="submit"
-                className="pop-btn mt-1 w-full justify-center bg-primary py-3.5 text-sm uppercase tracking-wider text-ink"
+                disabled={isSubmitting}
+                className="pop-btn mt-1 w-full justify-center bg-primary py-3.5 text-sm uppercase tracking-wider text-ink disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Login
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : null}
+                <span>Login</span>
               </button>
             </form>
           </div>
