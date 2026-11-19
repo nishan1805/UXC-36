@@ -7,10 +7,10 @@ import { EVENT_CONFIG } from "@/lib/event-config";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: `Admin Preview — ${EVENT_CONFIG.upcomingEvent.name} | UX 36गढ़` },
+      { title: `Organiser Dashboard — ${EVENT_CONFIG.upcomingEvent.name} | UX 36गढ़` },
       {
         name: "description",
-        content: `Frontend organiser dashboard prototype for ${EVENT_CONFIG.upcomingEvent.name} using sample demonstration data.`,
+        content: `Organiser dashboard login for ${EVENT_CONFIG.upcomingEvent.name}.`,
       },
       { name: "robots", content: "noindex, nofollow" },
     ],

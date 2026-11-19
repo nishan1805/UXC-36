@@ -1,23 +1,45 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, KeyRound, Lock, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { EVENT_CONFIG } from "@/lib/event-config";
-import { DEMO_ADMIN_PASSCODE } from "@/lib/registration-service";
 
 interface AdminLoginGateProps {
   onUnlock: () => void;
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
-  const [passcode, setPasscode] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
 
-    if (passcode.trim() !== DEMO_ADMIN_PASSCODE) {
-      setError(`Invalid demo passcode. Enter "${DEMO_ADMIN_PASSCODE}" to preview the dashboard.`);
+    const trimmedEmail = email.trim();
+    let hasError = false;
+
+    if (!trimmedEmail) {
+      setEmailError("Please enter your admin email address.");
+      hasError = true;
+    } else if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setEmailError("Please enter a valid email address.");
+      hasError = true;
+    } else {
+      setEmailError(null);
+    }
+
+    if (!password) {
+      setPasswordError("Please enter your password.");
+      hasError = true;
+    } else {
+      setPasswordError(null);
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -25,110 +47,128 @@ export function AdminLoginGate({ onUnlock }: AdminLoginGateProps) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-5 py-12">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center overflow-x-clip bg-background px-4 py-10 sm:px-6 sm:py-12">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-sm border-2 border-ink bg-cream px-3 py-1.5 font-display text-xs uppercase text-ink shadow-[3px_3px_0_var(--ink)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-sm border-2 border-ink bg-cream px-3.5 py-2 font-display text-xs uppercase tracking-wide text-ink shadow-[3px_3px_0_var(--ink)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            <ArrowLeft className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>Back to {EVENT_CONFIG.community.name}</span>
           </Link>
         </div>
 
         <div className="pop-card-static overflow-hidden bg-cream">
-          {/* Header */}
-          <div className="border-b-[3px] border-ink bg-primary px-6 py-6 text-center">
+          {/* Orange Brand Header */}
+          <div className="border-b-[3px] border-ink bg-primary px-6 py-7 text-center sm:px-8 sm:py-8">
             <img
               src={EVENT_CONFIG.community.logoSrc}
               alt="UX 36गढ़ official logo"
               className="mx-auto h-10 w-auto object-contain sm:h-11"
             />
-            <span className="mt-4 inline-flex items-center gap-1.5 rounded-sm border-2 border-ink bg-ink px-3 py-1 font-display text-[11px] uppercase tracking-wider text-cream">
-              <Lock className="h-3 w-3 text-primary" aria-hidden="true" />
-              Prototype Login
-            </span>
-            <h1 className="mt-3 font-display text-2xl text-cream retro-3d-cream sm:text-3xl">
+            <h1 className="mt-4 font-display text-2xl uppercase tracking-wide text-cream retro-3d-cream sm:text-3xl">
               Organiser Dashboard
             </h1>
-            <p className="mt-1 text-sm font-bold text-ink">{EVENT_CONFIG.upcomingEvent.name}</p>
           </div>
 
-          <div className="p-6 sm:p-7">
-            {/* Explicit Prototype Security Disclaimer */}
-            <div className="flex items-start gap-2.5 rounded-sm border-2 border-ink bg-sand px-3.5 py-3 text-xs font-bold leading-relaxed text-ink">
-              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-              <p>
-                <strong>Frontend Prototype Only:</strong> This demo passcode gate is solely for
-                previewing the organiser interface with sample data. It is not production security
-                and will be replaced with real organiser authentication during backend integration.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
+          {/* Login Form */}
+          <div className="p-6 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div>
                 <label
-                  htmlFor="admin-demo-passcode"
-                  className="flex items-center gap-2 font-display text-xs uppercase tracking-wider text-ink"
+                  htmlFor="admin-email"
+                  className="block font-display text-xs uppercase tracking-wider text-ink"
                 >
-                  <KeyRound className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                  <span>Demo Preview Passcode</span>
+                  Email Address
                 </label>
                 <input
-                  id="admin-demo-passcode"
-                  name="passcode"
-                  type="password"
-                  value={passcode}
+                  id="admin-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
                   onChange={(e) => {
-                    setPasscode(e.target.value);
-                    if (error) setError(null);
+                    setEmail(e.target.value);
+                    if (emailError) setEmailError(null);
                   }}
-                  placeholder="Enter demo passcode"
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={error ? "admin-passcode-error" : "admin-passcode-hint"}
-                  className={`mt-2 w-full rounded-sm border-[3px] bg-background px-4 py-3 font-mono text-base font-bold text-ink placeholder:font-sans placeholder:font-semibold placeholder:text-muted-foreground/70 focus:outline-none focus:ring-4 focus:ring-primary/40 ${
-                    error ? "border-destructive" : "border-ink"
+                  placeholder="Enter your admin email"
+                  aria-invalid={Boolean(emailError)}
+                  aria-describedby={emailError ? "admin-email-error" : undefined}
+                  className={`mt-2 w-full rounded-sm border-[3px] bg-background px-4 py-3 text-base font-semibold text-ink placeholder:font-medium placeholder:text-muted-foreground/70 focus:outline-none focus:ring-4 focus:ring-primary/40 ${
+                    emailError ? "border-destructive" : "border-ink"
                   }`}
                 />
-                <div
-                  id="admin-passcode-hint"
-                  className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-muted-foreground"
-                >
-                  <span>
-                    Documented demo passcode:{" "}
-                    <code className="rounded-sm border border-ink/30 bg-sand px-1.5 py-0.5 font-mono font-bold text-ink">
-                      {DEMO_ADMIN_PASSCODE}
-                    </code>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPasscode(DEMO_ADMIN_PASSCODE);
-                      setError(null);
-                    }}
-                    className="font-bold text-ink underline underline-offset-2 hover:text-primary"
-                  >
-                    Auto-fill demo code
-                  </button>
-                </div>
-                {error && (
+                {emailError && (
                   <p
-                    id="admin-passcode-error"
+                    id="admin-email-error"
                     role="alert"
                     className="mt-2 flex items-start gap-1.5 text-xs font-bold text-destructive"
                   >
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                    <span>{error}</span>
+                    <span>{emailError}</span>
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="admin-password"
+                  className="block font-display text-xs uppercase tracking-wider text-ink"
+                >
+                  Password
+                </label>
+                <div className="relative mt-2">
+                  <input
+                    id="admin-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (passwordError) setPasswordError(null);
+                    }}
+                    placeholder="Enter your password."
+                    aria-invalid={Boolean(passwordError)}
+                    aria-describedby={passwordError ? "admin-password-error" : undefined}
+                    className={`w-full rounded-sm border-[3px] bg-background py-3 pr-12 pl-4 text-base font-semibold text-ink placeholder:font-medium placeholder:text-muted-foreground/70 focus:outline-none focus:ring-4 focus:ring-primary/40 ${
+                      passwordError ? "border-destructive" : "border-ink"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    className="absolute top-1/2 right-2 inline-flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-ink/75 transition-colors hover:bg-sand/70 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+                {passwordError && (
+                  <p
+                    id="admin-password-error"
+                    role="alert"
+                    className="mt-2 flex items-start gap-1.5 text-xs font-bold text-destructive"
+                  >
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span>{passwordError}</span>
                   </p>
                 )}
               </div>
 
               <button
                 type="submit"
-                className="pop-btn w-full justify-center bg-primary text-sm text-ink"
+                className="pop-btn mt-1 w-full justify-center bg-primary py-3.5 text-sm uppercase tracking-wider text-ink"
               >
-                Open Admin Preview
+                Login
               </button>
             </form>
           </div>
