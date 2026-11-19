@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Placeholder for UX 36गढ़ MILAAP 2026 UPI Payment QR Code">
+  <rect width="420" height="420" rx="12" fill="#FFF7E2" stroke="#380701" stroke-width="8" />
+  <rect x="24" y="24" width="372" height="52" rx="6" fill="#FF7A1A" stroke="#380701" stroke-width="4" />
+  <text x="210" y="57" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" font-weight="900" fill="#380701">PAYMENT QR PLACEHOLDER</text>
+  <!-- Stylized non-scannable placeholder matrix -->
+  <g transform="translate(82, 98)">
+    <rect x="0" y="0" width="256" height="214" rx="8" fill="#FEF3E7" stroke="#380701" stroke-width="4" stroke-dasharray="10 6" />
+    <!-- Top-left finder placeholder -->
+    <rect x="20" y="20" width="52" height="52" rx="4" fill="none" stroke="#380701" stroke-width="6" />
+    <rect x="34" y="34" width="24" height="24" fill="#380701" />
+    <!-- Top-right finder placeholder -->
+    <rect x="184" y="20" width="52" height="52" rx="4" fill="none" stroke="#380701" stroke-width="6" />
+    <rect x="198" y="34" width="24" height="24" fill="#380701" />
+    <!-- Bottom-left finder placeholder -->
+    <rect x="20" y="142" width="52" height="52" rx="4" fill="none" stroke="#380701" stroke-width="6" />
+    <rect x="34" y="156" width="24" height="24" fill="#380701" />
+    <!-- Center notice -->
+    <rect x="52" y="84" width="152" height="46" rx="6" fill="#FBEABC" stroke="#380701" stroke-width="3" />
+    <text x="128" y="104" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="900" fill="#380701">REPLACE WITH OFFICIAL</text>
+    <text x="128" y="122" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="900" fill="#FF7A1A">₹250 UPI QR IMAGE</text>
+  </g>
+  <text x="210" y="348" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="800" fill="#380701">DO NOT SCAN · NOT LIVE PAYMENT QR</text>
+  <text x="210" y="376" text-anchor="middle" font-family="monospace" font-size="12" font-weight="700" fill="#6F3722">public/images/payment/upi-qr-placeholder.svg</text>
+</svg>

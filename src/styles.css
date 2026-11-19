@@ -35,25 +35,25 @@
   --color-sand: var(--sand);
   --color-peach: var(--peach);
   --color-brick: var(--brick);
-  --font-display: "Archivo Black", system-ui, sans-serif;
-  --font-body: "Barlow", system-ui, sans-serif;
+  --font-display: "Archivo Black", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-body: "Barlow", "Noto Sans Devanagari", system-ui, sans-serif;
 }
 
 :root {
   --radius: 0.25rem;
-  /* Brand: neo-retro pop */
+  /* Brand: neo-retro pop with official UX 36गढ़ primary orange */
   --background: oklch(0.964 0.032 74.5); /* #FEF3E7 */
   --foreground: oklch(0.223 0.093 34.5); /* #380701 */
   --ink: oklch(0.223 0.093 34.5);
   --cream: oklch(0.968 0.028 82); /* #FFF7E2 */
   --sand: oklch(0.936 0.062 87); /* #FBEABC */
   --peach: oklch(0.85 0.078 27); /* #FFBEB6 */
-  --brick: oklch(0.63 0.229 32.5); /* #F83F28 */
+  --brick: #ff7a1a; /* Official UX 36गढ़ primary orange */
   --card: oklch(0.968 0.028 82);
   --card-foreground: var(--ink);
   --popover: oklch(0.968 0.028 82);
   --popover-foreground: var(--ink);
-  --primary: oklch(0.63 0.229 32.5); /* #F83F28 */
+  --primary: #ff7a1a; /* Official UX 36गढ़ primary orange */
   --primary-foreground: oklch(0.968 0.028 82);
   --secondary: oklch(0.936 0.062 87);
   --secondary-foreground: var(--ink);
@@ -61,11 +61,11 @@
   --muted-foreground: oklch(0.45 0.08 34);
   --accent: oklch(0.85 0.078 27);
   --accent-foreground: var(--ink);
-  --destructive: oklch(0.63 0.229 32.5); /* #F83F28 */
+  --destructive: oklch(0.55 0.21 27); /* Alert red for validation & rejected states */
   --destructive-foreground: oklch(0.968 0.028 82);
   --border: oklch(0.223 0.093 34.5);
   --input: oklch(0.223 0.093 34.5);
-  --ring: oklch(0.63 0.229 32.5);
+  --ring: #ff7a1a;
 
   --shadow-pop: 8px 8px 0 var(--ink);
   --shadow-pop-sm: 4px 4px 0 var(--ink);
@@ -73,6 +73,9 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   * {
     border-color: var(--color-border);
   }
@@ -80,15 +83,24 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
-    background-image:
-      radial-gradient(var(--peach) 1.2px, transparent 1.3px);
+    background-image: radial-gradient(var(--peach) 1.2px, transparent 1.3px);
     background-size: 18px 18px;
   }
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
+    font-weight: 900;
+    font-synthesis-weight: none;
     letter-spacing: -0.01em;
     text-transform: uppercase;
   }
+}
+
+.font-display {
+  font-weight: 900;
+  font-synthesis-weight: none;
 }
 
 @utility pop-card {
@@ -96,11 +108,20 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-pop-sm);
   background: var(--cream);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
   &:hover {
     transform: translate(-3px, -3px);
     box-shadow: var(--shadow-pop);
   }
+}
+
+@utility pop-card-static {
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop-sm);
+  background: var(--cream);
 }
 
 @utility pop-btn {
@@ -111,10 +132,14 @@
   border-radius: var(--radius);
   padding: 0.85rem 1.6rem;
   font-family: var(--font-display);
+  font-weight: 900;
+  font-synthesis-weight: none;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   box-shadow: var(--shadow-pop-sm);
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
   &:hover {
     transform: translate(-2px, -2px);
     box-shadow: var(--shadow-pop);
@@ -123,9 +148,13 @@
     transform: translate(2px, 2px);
     box-shadow: 0 0 0 var(--ink);
   }
+  &:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+  }
 }
 
-/* Hard drop shadow: uses primary red offset so black text stays readable */
+/* Hard drop shadow: uses primary orange offset so ink text stays readable */
 @utility retro-3d {
   text-shadow:
     2px 2px 0 var(--primary),
@@ -135,9 +164,9 @@
 
 @utility retro-3d-cream {
   text-shadow:
-    2px 2px 0 var(--brick),
+    2px 2px 0 var(--ink),
     4px 4px 0 var(--ink),
-    7px 7px 0 var(--ink);
+    6px 6px 0 var(--ink);
 }
 
 @utility halftone {
@@ -153,15 +182,57 @@
 }
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes wobble {
-  0%, 100% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
 }
 
 @utility wobble {
   animation: wobble 4s ease-in-out infinite;
+}
+
+@keyframes hero-sine-wave {
+  0%,
+  100% {
+    transform: translateY(-6px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@utility hero-wave-char {
+  display: inline-block;
+  animation: hero-sine-wave 4.8s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .marquee-track,
+  .wobble,
+  .hero-wave-char {
+    animation: none;
+    transform: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

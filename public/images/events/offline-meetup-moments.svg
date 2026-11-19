@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="Placeholder for community table discussions at Nukkad Cafe">
+  <rect width="1200" height="750" fill="#FF7A1A" />
+  <rect x="44" y="44" width="1112" height="662" rx="10" fill="#FFF7E2" stroke="#380701" stroke-width="6" />
+  <rect x="76" y="76" width="380" height="44" rx="4" fill="#FBEABC" stroke="#380701" stroke-width="4" />
+  <text x="96" y="105" font-family="system-ui, sans-serif" font-size="20" font-weight="900" fill="#380701" letter-spacing="1">PHOTO PLACEHOLDER · REPLACE ME</text>
+  <g transform="translate(600, 320)" text-anchor="middle">
+    <rect x="-135" y="-110" width="270" height="175" rx="12" fill="#FEF3E7" stroke="#380701" stroke-width="5" />
+    <circle cx="0" cy="-22" r="56" fill="#FF7A1A" stroke="#380701" stroke-width="5" />
+    <text x="0" y="-8" font-family="system-ui, sans-serif" font-size="38" font-weight="900" fill="#FFF7E2">36</text>
+    <text y="120" font-family="system-ui, sans-serif" font-size="38" font-weight="900" fill="#380701">COMMUNITY MOMENTS — RAIPUR MEETUP</text>
+    <text y="164" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#6F3722">First offline step towards UX 36गढ़ MILAAP 2026</text>
+    <text y="206" font-family="monospace" font-size="19" font-weight="700" fill="#380701">Replace file: public/images/events/offline-meetup-moments.svg</text>
+  </g>
+</svg>

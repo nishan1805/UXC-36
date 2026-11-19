@@ -77,17 +77,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "UXC 36गढ़ — UI UX Designer Community" },
+      { title: "UX 36गढ़ — UI/UX Design Community & UX 36गढ़ MILAAP 2026" },
       {
         name: "description",
         content:
-          "UXC 36गढ़ is a community of UI UX designers from Chhattisgarh. Meetups, critiques, portfolio reviews and craft — join us to grow together.",
+          "UX 36गढ़ is Chhattisgarh's growing UI/UX design community. Explore our journey, past meetups, and register for UX 36गढ़ MILAAP 2026.",
       },
-      { name: "author", content: "UXC 36गढ़" },
-      { property: "og:title", content: "UXC 36गढ़ — UI UX Designer Community" },
+      { name: "author", content: "UX 36गढ़" },
+      {
+        property: "og:title",
+        content: "UX 36गढ़ — UI/UX Design Community & UX 36गढ़ MILAAP 2026",
+      },
       {
         property: "og:description",
-        content: "A neo-retro-pop community of UI UX designers from Chhattisgarh.",
+        content:
+          "Where 36गढ़'s Design Community Connects. Resources, meetups, opportunities and UX 36गढ़ MILAAP 2026.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -98,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:ital,wght@0,400;0,600;0,700;0,800;1,600&family=Noto+Sans+Devanagari:wght@600;700;800;900&display=swap",
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
     ],
@@ -112,11 +116,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>

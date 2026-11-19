@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="Placeholder for Online Portfolio Upgrade Session screenshot">
+  <rect width="1200" height="750" fill="#FFBEB6" />
+  <rect x="44" y="44" width="1112" height="662" rx="10" fill="#FFF7E2" stroke="#380701" stroke-width="6" />
+  <rect x="76" y="76" width="420" height="44" rx="4" fill="#FF7A1A" stroke="#380701" stroke-width="4" />
+  <text x="96" y="105" font-family="system-ui, sans-serif" font-size="20" font-weight="900" fill="#380701" letter-spacing="1">SESSION PLACEHOLDER · REPLACE ME</text>
+  <g transform="translate(600, 320)" text-anchor="middle">
+    <rect x="-160" y="-115" width="320" height="185" rx="12" fill="#FEF3E7" stroke="#380701" stroke-width="5" />
+    <rect x="-136" y="-88" width="170" height="130" rx="6" fill="#FBEABC" stroke="#380701" stroke-width="4" />
+    <rect x="52" y="-88" width="84" height="58" rx="6" fill="#FF7A1A" stroke="#380701" stroke-width="4" />
+    <rect x="52" y="-16" width="84" height="58" rx="6" fill="#FFBEB6" stroke="#380701" stroke-width="4" />
+    <text y="120" font-family="system-ui, sans-serif" font-size="38" font-weight="900" fill="#380701">PORTFOLIO UPGRADE SESSION</text>
+    <text y="164" font-family="system-ui, sans-serif" font-size="24" font-weight="700" fill="#6F3722">Online community learning session · Case studies &amp; design storytelling</text>
+    <text y="206" font-family="monospace" font-size="19" font-weight="700" fill="#380701">Replace file: public/images/events/portfolio-upgrade-session.svg</text>
+  </g>
+</svg>

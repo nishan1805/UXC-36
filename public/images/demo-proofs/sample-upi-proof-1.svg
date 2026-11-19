@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 680" role="img" aria-label="Sample UPI payment proof preview A (Demo data only)">
+  <rect width="420" height="680" rx="18" fill="#FFF7E2" stroke="#380701" stroke-width="6" />
+  <rect x="20" y="20" width="380" height="52" rx="8" fill="#FF7A1A" stroke="#380701" stroke-width="3" />
+  <text x="210" y="52" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="900" fill="#380701">SAMPLE SCREENSHOT · DEMO ONLY</text>
+  <circle cx="210" cy="160" r="46" fill="#D1FAE5" stroke="#380701" stroke-width="4" />
+  <path d="M188 160 L204 176 L234 144" fill="none" stroke="#065F46" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="210" y="246" text-anchor="middle" font-family="system-ui, sans-serif" font-size="22" font-weight="800" fill="#380701">SAMPLE PAYMENT RECEIPT</text>
+  <text x="210" y="302" text-anchor="middle" font-family="system-ui, sans-serif" font-size="46" font-weight="900" fill="#380701">₹250.00</text>
+  <rect x="34" y="340" width="352" height="220" rx="10" fill="#FEF3E7" stroke="#380701" stroke-width="3" />
+  <text x="54" y="382" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#6F3722">PAID TO</text>
+  <text x="54" y="408" font-family="system-ui, sans-serif" font-size="18" font-weight="800" fill="#380701">UX 36गढ़ MILAAP 2026 (Sample)</text>
+  <text x="54" y="454" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#6F3722">APP</text>
+  <text x="54" y="480" font-family="system-ui, sans-serif" font-size="18" font-weight="800" fill="#380701">UPI Demo App (Mock Proof)</text>
+  <text x="54" y="524" font-family="monospace" font-size="14" font-weight="700" fill="#6F3722">REF: DEMO-SAMPLE-NOT-REAL-001</text>
+  <text x="210" y="618" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" font-weight="800" fill="#6F3722">NOT A REAL PARTICIPANT TRANSACTION</text>
+</svg>

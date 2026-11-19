@@ -1,0 +1,1111 @@
+# PROJECT: Complete UXC 36गढ़ Website Upgrade — Homepage, Registration Page & Frontend Admin Dashboard
+
+Act as a senior UI/UX designer, creative director and senior React frontend developer.
+
+I want you to upgrade my EXISTING UXC-36 website into a complete community website and event registration experience for our upcoming event:
+
+**UX 36गढ़ Connect 2026**
+
+This is an existing, working project. You must work on the existing GitHub repository and preserve its technology stack, branding, useful existing content, assets, social links and design language.
+
+## PROJECT LINKS
+
+Live website:
+https://uxc-36.vercel.app/
+
+GitHub repository:
+https://github.com/nishan1805/UXC-36
+
+Existing technology stack:
+
+- React 19
+- TypeScript
+- TanStack Start
+- TanStack Router
+- Tailwind CSS 4
+- Vite
+- Vercel hosting
+
+## THREE MAIN DELIVERABLES
+
+1. Complete homepage update.
+2. Dedicated event registration page.
+3. Frontend admin dashboard.
+
+IMPORTANT: THIS IS THE FRONTEND DEVELOPMENT PHASE ONLY.
+
+Do not connect Supabase yet. We will implement the database, real authentication, screenshot storage and backend integration separately using Grok and Cursor after the frontend has been completed and reviewed.
+
+Do not build the attendee card yet. Its final design and implementation instructions will be provided separately.
+
+---
+
+# PART 1 — INSPECT THE EXISTING PROJECT
+
+Before making any changes, inspect the complete repository.
+
+Review:
+
+- Existing homepage.
+- Navigation and footer.
+- Existing sections and components.
+- Global CSS and Tailwind configuration.
+- Existing fonts and colour variables.
+- Logo and public assets.
+- Existing animations and interactive elements.
+- Existing WhatsApp, Instagram and LinkedIn links.
+- React routing architecture.
+- package.json.
+- Vercel and Vite configuration.
+
+Existing homepage:
+`src/routes/index.tsx`
+
+Inspect the other files and components as necessary.
+
+DO NOT:
+
+- Create a completely new project.
+- Rebuild using Next.js.
+- Replace TanStack Start.
+- Unnecessarily change existing application configuration.
+- Remove working features.
+- Remove existing social media links.
+- Rewrite Git history.
+- Force-push or overwrite the production branch.
+
+Reuse existing components wherever appropriate.
+
+The objective is to upgrade the current UXC-36 website, not replace it with a generic template.
+
+---
+
+# PART 2 — OFFICIAL BRAND IDENTITY
+
+This is a critical requirement.
+
+I do NOT want to change the existing website's complete visual identity.
+
+I only want to update the shade of the primary orange colour.
+
+## Official primary orange
+
+`#FF7A1A`
+
+Replace the existing brighter primary orange/red accent with the official orange above wherever it is being used as the primary brand accent.
+
+## Preserve everything else
+
+Keep the existing:
+
+- Typography.
+- Font families.
+- Background colours.
+- Secondary colours.
+- Text colours.
+- Border styles.
+- Shadows.
+- Card styles.
+- Button styles.
+- Spacing system.
+- Existing animations.
+- Decorative elements.
+- Overall layout personality.
+- Brand logo.
+
+Do not introduce a different colour palette.
+
+Do not replace the existing typography.
+
+Do not turn the website into a generic corporate or SaaS landing page.
+
+The new sections and pages must feel like natural extensions of the existing UXC-36 website.
+
+Use the original UXC 36गढ़ logo from the repository. Never recreate or distort it.
+
+---
+
+# PART 3 — COMMUNITY AND EVENT INFORMATION
+
+Use these details accurately throughout the website.
+
+## Community
+
+Name: UX 36गढ़
+
+## Official event name
+
+UX 36गढ़ Connect 2026
+
+IMPORTANT: Never use "CG UI/UX Event 2026" as the event name.
+
+Use only the official name: UX 36गढ़ Connect 2026.
+
+## Upcoming event details
+
+- Date: Sunday, 29 November 2026.
+- Location: Raipur, Chhattisgarh.
+- Venue: To be announced.
+- Expected duration: Approximately 4–5 hours.
+- Expected participation: 30+ people.
+- Registration fee: ₹250 per person.
+
+The registration fee must NOT appear on the homepage.
+
+Show the ₹250 fee only on the registration page.
+
+Do not invent the final venue, exact timings, speakers, sponsors or agenda.
+
+## Community statistics
+
+Display only:
+
+- 150+ WhatsApp community members.
+- 120+ LinkedIn followers.
+
+Do not display 9 attendees as a community statistic.
+
+Do not reuse the old unverified 480+ designers, 24 meetups or 9 cities figures.
+
+## Previous community activities
+
+We have organised:
+
+1. First offline community meetup.
+2. Online Portfolio Upgrade session.
+3. Virtual community meetup.
+
+### First offline meetup details
+
+Date: 23 August 2026.
+
+Venue: Nukkad Cafe & Co-working, New Rajendra Nagar, Raipur.
+
+Time: 3:00 PM – 5:30 PM.
+
+Attendance: 9 members.
+
+It was our first casual offline gathering.
+
+Members joined from Raipur, Bhilai and Baloda Bazar, with most participants from Raipur.
+
+Use these details accurately.
+
+Do not invent dates or attendance figures for the online activities.
+
+---
+
+# PART 4 — COMPLETE HOMEPAGE UPDATE
+
+The homepage must remain a SINGLE LANDING PAGE with navigation links that scroll to the respective sections.
+
+Do not create separate pages for the homepage sections.
+
+Create these sections:
+
+1. Hero.
+2. About UX 36गढ़.
+3. Community statistics.
+4. What We Do.
+5. Our Journey.
+6. Previous Events Photo Gallery.
+7. Upcoming UX 36गढ़ Connect 2026.
+8. Who Should Attend.
+9. FAQ.
+10. Join Our Community.
+11. Footer.
+
+## 4.1 Navigation
+
+Create a responsive navigation bar.
+
+Use these menu items:
+
+- Home.
+- About.
+- What We Do.
+- Our Journey.
+- Gallery.
+- Upcoming Event.
+- FAQ.
+- Join Community.
+
+Add a prominent Register Now CTA linked to `/register`.
+
+Requirements:
+
+- Sticky header.
+- Existing UXC logo.
+- Responsive mobile navigation.
+- Working anchor links.
+- Smooth scrolling.
+- Proper hover and active states.
+
+Preserve the existing navigation design language.
+
+## 4.2 Hero section
+
+The upcoming event must be the main focus.
+
+Use:
+
+**UX 36गढ़ Connect 2026**
+
+Suggested headline:
+
+"Where Chhattisgarh's design community comes together."
+
+Suggested description:
+
+"A gathering of designers, creative minds and aspiring professionals from across Chhattisgarh. Connect, exchange ideas, share experiences and celebrate the growing design community."
+
+Display:
+
+- 29 November 2026.
+- Raipur, Chhattisgarh.
+- Approximately 4–5 hours.
+- 30+ expected participants.
+
+Do not display registration fees here.
+
+Primary button:
+
+"Join UX 36गढ़ Connect"
+
+Link it to `/register`.
+
+Secondary button:
+
+"Explore Our Community"
+
+Scroll to the About section.
+
+Retain the existing tagline:
+
+"आ जाओ, let's design out loud"
+
+Incorporate it naturally into the hero or About section.
+
+Make the hero visually engaging while retaining the current site's styles.
+
+## 4.3 About UX 36गढ़
+
+Heading:
+
+"More than a community. A space to grow together."
+
+Use the following content:
+
+"UX 36गढ़ is a growing community bringing together UI/UX designers, product designers, creative minds and design enthusiasts across Chhattisgarh.
+
+We believe great design communities grow through conversations, shared experiences, constructive feedback and meaningful connections.
+
+From virtual meetups and portfolio sessions to offline gatherings, we're creating opportunities for people to learn, collaborate and grow together.
+
+Whether you're a student exploring design, a freelancer, a working professional or simply curious about UX, there's a place for you here."
+
+Present this with a visually engaging layout consistent with the existing website.
+
+## 4.4 Community statistics
+
+Show two statistics only:
+
+150+ WhatsApp Community Members.
+
+120+ LinkedIn Followers.
+
+Do not include the offline meetup attendance as a third statistic.
+
+## 4.5 What We Do
+
+Preserve the existing four community activity categories.
+
+### Critique Nights
+
+A space to share design work, exchange perspectives and receive constructive feedback.
+
+### Portfolio Rescue
+
+Helping designers improve their portfolios, present projects and communicate their design process.
+
+### Craft Jams
+
+Creative challenges, explorations and opportunities to experiment with new ideas and design techniques.
+
+### Local First
+
+Building meaningful connections and strengthening the design ecosystem within Chhattisgarh.
+
+Preserve the existing design language of these cards.
+
+## 4.6 Our Journey — Previous Community Activities
+
+Create an attractive timeline or event-card section.
+
+### First Offline Meetup
+
+23 August 2026.
+
+Nukkad Cafe & Co-working, New Rajendra Nagar, Raipur.
+
+3:00 PM – 5:30 PM.
+
+Nine community members attended.
+
+Description:
+
+"Our first offline gathering was a casual meetup that brought together nine community members. Designers joined us from Raipur, Bhilai and Baloda Bazar, making it a memorable first step towards building stronger in-person connections across Chhattisgarh."
+
+### Portfolio Upgrade Session
+
+An online community learning session focused on improving design portfolios, presenting projects and communicating design decisions more effectively.
+
+### Virtual Community Meetup
+
+An online gathering where members could introduce themselves, share experiences and connect with fellow designers.
+
+Do not invent dates or attendance numbers for these online activities.
+
+## 4.7 Previous Events Photo Gallery
+
+Create a prominent automatic photo carousel.
+
+Use real images from:
+
+- First offline meetup.
+- Portfolio Upgrade session.
+- Virtual community meetup.
+- Other genuine activities available in the repository.
+
+Features:
+
+- Automatic transition every 4–5 seconds.
+- Previous and next controls.
+- Pagination indicators.
+- Pause on hover.
+- Smooth transitions.
+- Responsive image cropping.
+- Captions.
+- Lazy loading.
+
+Use genuine photographs from existing project assets.
+
+Do not generate fake historical event photographs.
+
+If some photos are unavailable, create clearly replaceable image placeholders.
+
+Keep the gallery reusable so new event photographs can be added easily.
+
+## 4.8 Upcoming event section
+
+Event name:
+
+UX 36गढ़ Connect 2026
+
+Heading:
+
+"A bigger gathering. Stronger connections. More memories."
+
+Description:
+
+"After our first casual offline meetup, we're taking a bigger step forward.
+
+This November, UX 36गढ़ is bringing together designers, aspiring professionals and creative minds for a special 4–5 hour in-person gathering.
+
+Our goal is to bring together 30+ participants and create a memorable experience for the growing design community of Chhattisgarh."
+
+Display:
+
+- Sunday, 29 November 2026.
+- Raipur.
+- Venue to be announced.
+- Approximately 4–5 hours.
+- 30+ expected participants.
+
+Do not display ₹250 on the homepage.
+
+CTA: Register Now → `/register`.
+
+## 4.9 Who Should Attend
+
+Show:
+
+- UI/UX and Product Designers.
+- Students and aspiring designers.
+- Freelancers.
+- Working professionals.
+- Creative professionals and design enthusiasts.
+
+Description:
+
+"Whether you're just starting your design journey or already working in the industry, UX 36गढ़ Connect is an opportunity to meet people who share your curiosity about design."
+
+## 4.10 FAQ
+
+Create an attractive accordion.
+
+Questions:
+
+1. What is UX 36गढ़?
+2. Who can join the community?
+3. Who can attend UX 36गढ़ Connect 2026?
+4. When is the event?
+5. Where will the event take place?
+6. How long will the event be?
+7. How can I register?
+8. How do I complete the payment?
+9. When will my payment be verified?
+10. Will the venue be announced later?
+
+Use only the provided information when answering.
+
+## 4.11 Join Our Community
+
+This section must retain the exact existing social media URLs from the current project.
+
+Preserve:
+
+- WhatsApp.
+- Instagram.
+- LinkedIn.
+
+Do not invent, change or replace existing social links.
+
+Create three attractive community CTAs:
+
+- Join our WhatsApp Community.
+- Follow us on Instagram.
+- Connect with us on LinkedIn.
+
+Ensure all links work correctly.
+
+Use the existing destination URLs in both this section and the footer.
+
+## 4.12 Footer
+
+Include:
+
+- Official UXC logo.
+- Community description.
+- Homepage navigation links.
+- WhatsApp link.
+- Instagram link.
+- LinkedIn link.
+- Event registration link.
+- Copyright information.
+
+Preserve all actual existing social destinations.
+
+---
+
+# PART 5 — EVENT REGISTRATION PAGE
+
+Create a dedicated route:
+
+`/register`
+
+This page must have a distinct event-registration experience while using exactly the same brand styling as the existing website.
+
+It should be mobile-first and visually attractive.
+
+The page must have the following structure in this exact order:
+
+1. Photo collage hero.
+2. What's waiting for you?
+3. Personal details form.
+4. UPI payment section.
+5. Payment screenshot upload.
+6. Submission confirmation preview.
+
+## 5.1 Registration Hero — Photo Collage
+
+This is one of the most important visual requirements.
+
+Do NOT create a plain registration form page.
+
+Create an attractive hero using photographs from previous UX 36गढ़ activities.
+
+### Background composition
+
+Use multiple genuine event photographs:
+
+- Offline meetup photographs.
+- Online session screenshots.
+- Virtual meetup screenshots.
+- Group photographs.
+- Candid community moments.
+
+Arrange them as an editorial photo collage.
+
+Design direction:
+
+- Different image sizes.
+- Scattered composition.
+- Slight rotations.
+- Overlapping images.
+- Carefully controlled image placement.
+- Subtle visual depth.
+- Dark or translucent overlay over the photographs.
+- Foreground event text with excellent readability.
+
+The photos should create atmosphere without overpowering the event information.
+
+Do not use stock images pretending to be previous UXC activities.
+
+If actual images are missing, use clearly identifiable placeholders.
+
+### Hero foreground content
+
+Display:
+
+UX 36गढ़ PRESENTS
+
+UX 36गढ़ Connect 2026
+
+Heading:
+
+"Let's connect, learn and grow together."
+
+Description:
+
+"Be part of a memorable gathering of designers, creative minds and aspiring professionals from across Chhattisgarh."
+
+Event information:
+
+- Sunday, 29 November 2026.
+- Raipur, venue to be announced.
+- Approximately 4–5 hours.
+- 30+ expected participants.
+
+Display the registration fee prominently:
+
+₹250 per person.
+
+Add a CTA:
+
+Register Now.
+
+The CTA should scroll smoothly to the registration form.
+
+### Responsive behaviour
+
+On mobile:
+
+- Reduce collage image count.
+- Avoid excessive overlapping.
+- Keep event information readable.
+- Maintain good contrast.
+- Avoid horizontal overflow.
+
+## 5.2 What's Waiting for You?
+
+Place this section directly below the photo collage hero and before the registration form.
+
+Heading:
+
+"More than just a meetup. An experience worth remembering."
+
+Description:
+
+"Your afternoon with UX 36गढ़ is about more than design. It's about meeting people, sharing ideas, enjoying the experience and creating memories together."
+
+Create four attractive experience cards.
+
+### Snacks & Refreshments
+
+"Enjoy refreshments while connecting and spending time with fellow designers."
+
+### Event Souvenirs
+
+"Take home a little keepsake from UX 36गढ़ Connect 2026."
+
+### Activities & Fun
+
+"Participate in engaging community activities, creative interactions and fun experiences."
+
+### Connections & Memories
+
+"Meet new people, exchange ideas, build connections and make memories together."
+
+Use appropriate imagery or icons.
+
+Do not invent specific food menus, gifts, speakers or activities.
+
+Add a supporting visual highlight:
+
+"All this for ₹250."
+
+"One registration. A whole lot of experiences."
+
+Keep the section visually consistent with the homepage.
+
+## 5.3 Personal Details Form
+
+Heading:
+
+"Let's get to know you."
+
+Supporting text:
+
+"Just a few details to get your registration started."
+
+The form must contain ONLY three personal-information fields.
+
+### Field 1 — Full name
+
+- Required text field.
+- Trim unnecessary leading and trailing spaces.
+- Validate reasonable name length.
+
+### Field 2 — Mobile number
+
+- Fixed +91 prefix displayed separately.
+- Accept exactly 10 Indian mobile-number digits.
+- Reject invalid values.
+- Do not add a country selector for this version.
+
+### Field 3 — City
+
+- Required text field.
+- Accept cities across India.
+- Do not restrict to Raipur.
+
+DO NOT ADD:
+
+- Email.
+- Organisation.
+- Company.
+- College.
+- Designation.
+- Profession.
+- Transaction ID.
+
+Only collect name, mobile number and city as personal details.
+
+## 5.4 Payment Section
+
+Heading:
+
+"Secure your spot."
+
+Registration fee:
+
+₹250 per person.
+
+Display:
+
+- UPI payment QR.
+- UPI ID.
+- Copy UPI ID button.
+- Payment instructions.
+
+The UPI payment QR and UPI ID are not yet supplied.
+
+Create clearly labelled placeholders for:
+
+- Payment QR image.
+- UPI ID.
+
+Make both values easy to replace from a central configuration file.
+
+Do NOT use the main website QR code as the payment QR.
+
+The website QR is a separate asset intended for the future attendee card.
+
+Copy button functionality:
+
+- Copy the UPI ID.
+- Show a small success message.
+- Handle clipboard permission errors gracefully.
+
+Payment instructions:
+
+1. Scan the UPI QR using your preferred payment application.
+2. Pay exactly ₹250.
+3. Return to the registration page.
+4. Upload your payment screenshot.
+
+Supported UPI applications can be mentioned as examples, including Google Pay, PhonePe, Paytm and BHIM.
+
+No payment gateway is required.
+
+## 5.5 Payment Screenshot Upload
+
+Heading:
+
+"Almost there!"
+
+Supporting text:
+
+"Upload a screenshot of your completed ₹250 payment."
+
+Accept:
+
+- JPG.
+- JPEG.
+- PNG.
+- WebP.
+
+Maximum file size:
+
+5 MB.
+
+Implement:
+
+- Drag and drop.
+- Browse files.
+- Image preview.
+- Remove image.
+- Replace image.
+- File type validation.
+- File size validation.
+- Loading state.
+- Clear validation errors.
+
+The screenshot must be selected before the demo submission can proceed.
+
+## 5.6 Submit Registration
+
+Add a prominent:
+
+Submit Registration button.
+
+Validate all required fields and the screenshot before allowing the demo submission.
+
+For this frontend-only phase, simulate the submission interaction.
+
+IMPORTANT:
+
+Do not claim that real registration data has been submitted or stored.
+
+Show an unmistakable notice:
+
+"Frontend preview mode — your details and payment screenshot have not been saved. Real registration will be enabled when the database connection is implemented."
+
+Create a polished demo confirmation state to preview the final user experience.
+
+Do not create the attendee card yet.
+
+We will implement that separately after its design is provided.
+
+---
+
+# PART 6 — FRONTEND ADMIN DASHBOARD
+
+Create a separate route:
+
+`/admin`
+
+I want to see the complete admin dashboard interface before connecting the actual registration database.
+
+IMPORTANT:
+
+This is a frontend prototype only.
+
+Do not connect Supabase, Google Forms, Google Sheets or any external database.
+
+Do not create a backend.
+
+Do not claim that the dashboard displays actual participant registrations.
+
+## 6.1 Admin Login Screen
+
+Create a professional login screen consistent with UXC branding.
+
+For this frontend prototype only, use a simple demo passcode gate or mock login interaction.
+
+Clearly label it as a prototype login.
+
+Do not treat it as production security.
+
+Do not use this mechanism to protect real participant data.
+
+The future version will use proper organiser authentication.
+
+## 6.2 Dashboard Overview
+
+Display four summary cards:
+
+- Total Registrations.
+- Pending Verification.
+- Verified Payments.
+- Rejected Payments.
+
+Use clearly identified sample data.
+
+Make the dashboard look like a real organiser dashboard.
+
+## 6.3 Registration Table
+
+Show:
+
+- Registration ID.
+- Participant name.
+- Mobile number.
+- City.
+- Payment screenshot.
+- Payment status.
+- Registration date.
+- Actions.
+
+Use sample participant records only.
+
+Include:
+
+- Search by name.
+- Search by mobile number.
+- Search by city.
+- Filter by payment status.
+- View screenshot preview.
+- Mark as Verified.
+- Mark as Rejected.
+- Refresh the table.
+- Export CSV.
+
+Make these interactions functional with mock data.
+
+Changes to payment status should update the in-memory demo table and summary cards.
+
+Refreshing may reset the sample data.
+
+Clearly identify all entries as sample data.
+
+Do not use invented sample records as actual participants.
+
+## 6.4 Demo Screenshot Preview
+
+Provide sample payment-proof thumbnails for demonstration purposes only.
+
+Allow an admin-preview user to open a screenshot modal.
+
+These sample screenshots must not be presented as real payment records.
+
+## 6.5 Demo Admin Login
+
+Add a clearly documented demo passcode for preview purposes.
+
+Keep it separate from any production authentication assumptions.
+
+The admin interface should be easy to replace with real authentication and database integration later.
+
+---
+
+# PART 7 — FRONTEND-ONLY DEVELOPMENT RULES
+
+This entire implementation phase is frontend only.
+
+STRICTLY DO NOT:
+
+- Install Supabase.
+- Create a Supabase project.
+- Connect to a database.
+- Create database tables.
+- Create Storage buckets.
+- Add Supabase authentication.
+- Create API routes for database access.
+- Create a custom backend.
+- Integrate Google Forms.
+- Integrate Google Sheets.
+- Add a payment gateway.
+- Store real registrations in localStorage.
+- Store real registration information in IndexedDB.
+- Save participant information in browser persistence.
+- Pretend that registration data is stored.
+- Use a fake password as real production security.
+
+Use sample data only for the admin dashboard.
+
+Use in-memory demo state for preview interactions.
+
+The registration form should show a demo-mode notice explaining that real submissions are not saved yet.
+
+## FUTURE INTEGRATION PREPARATION
+
+Although no database should be connected in this phase, organise the frontend in a way that makes future integration easy.
+
+Create a clean registration-service abstraction, for example:
+
+`src/lib/registration-service.ts`
+
+Keep registration form components separate from submission logic.
+
+Use appropriate TypeScript interfaces.
+
+The future service should be replaceable with an actual database implementation without rewriting the entire registration page.
+
+Create:
+
+`src/lib/event-config.ts`
+
+Use it for editable information including:
+
+- Community name.
+- Event name.
+- Event date.
+- Location.
+- Venue status.
+- Duration.
+- Registration fee.
+- UPI ID.
+- Payment QR image.
+- Community statistics.
+- Social media URLs.
+- Previous event images.
+- Event contact details.
+
+Create reusable and modular components.
+
+Do not put the entire application inside one large component.
+
+---
+
+# PART 8 — FUTURE ATTENDEE CARD PLACEHOLDER
+
+Do NOT build the attendee card in this phase.
+
+I will provide the final card reference and assets separately.
+
+Do not design a different card independently.
+
+Do not generate another card illustration.
+
+Do not use the website QR code as a payment QR.
+
+For now, create only the demo registration confirmation state.
+
+Keep the code structure ready for a future attendee-card component.
+
+---
+
+# PART 9 — RESPONSIVENESS AND QUALITY
+
+The majority of people will open the website through Instagram and WhatsApp on their phones.
+
+Mobile-first design is a priority.
+
+Ensure responsive behaviour across:
+
+- Mobile phones.
+- Tablets.
+- Laptops.
+- Desktop screens.
+
+Test:
+
+- Homepage navigation.
+- Hero.
+- Community cards.
+- Previous event carousel.
+- Event information.
+- Social links.
+- Registration hero photo collage.
+- Experience cards.
+- Registration form.
+- Payment section.
+- Screenshot preview.
+- Demo confirmation.
+- Admin login.
+- Admin summary cards.
+- Admin registration table.
+
+Also implement:
+
+- No horizontal overflow.
+- Proper image cropping.
+- Optimised images.
+- Lazy loading.
+- Accessible colour contrast.
+- Keyboard-accessible controls.
+- Visible focus states.
+- Reduced-motion support.
+- Proper form labels.
+- Clear error messages.
+- Proper button loading states.
+- SEO metadata.
+- Open Graph metadata.
+
+Do not add unnecessary libraries.
+
+---
+
+# PART 10 — FINAL TESTING
+
+Before completion:
+
+1. Inspect the complete homepage.
+2. Check every homepage section.
+3. Test all navigation anchors.
+4. Test WhatsApp, Instagram and LinkedIn links.
+5. Test the automatic photo carousel.
+6. Test mobile navigation.
+7. Test /register.
+8. Test all form validations.
+9. Test UPI ID copy interaction.
+10. Test image upload preview.
+11. Test invalid image formats.
+12. Test files larger than 5 MB.
+13. Test the demo registration confirmation.
+14. Test /admin.
+15. Test demo login.
+16. Test table search and filters.
+17. Test status updates in mock data.
+18. Test CSV export.
+19. Check responsiveness.
+20. Run TypeScript checks and the production build.
+
+Fix broken routes, imports and styling errors.
+
+Do not claim that actual registrations are saved.
+
+Do not claim that a real database connection exists.
+
+---
+
+# PART 11 — FINAL DELIVERABLES
+
+At completion, provide:
+
+1. Summary of homepage changes.
+2. Summary of registration-page changes.
+3. Summary of admin dashboard changes.
+4. List of modified files.
+5. List of newly created files.
+6. Location of all image placeholders.
+7. Location of the UPI QR placeholder.
+8. Instructions to replace event photographs.
+9. Instructions to replace the payment QR and UPI ID.
+10. Instructions to update event information.
+11. Local preview and testing instructions.
+12. Actual production build result.
+13. Remaining items that require my input.
+
+Clearly separate:
+
+- Completed frontend features.
+- Demo-only features.
+- Future database integration requirements.
+- Assets and information still needed.
+
+---
+
+# FINAL CREATIVE DIRECTION
+
+The website must communicate:
+
+UX 36गढ़ is a growing design community in Chhattisgarh.
+
+We have already organised online learning sessions and our first offline meetup.
+
+Now we are taking the next step with UX 36गढ़ Connect 2026, a bigger gathering designed to bring our community together.
+
+The homepage should make visitors understand and trust the community.
+
+The registration page should create excitement, showcase previous community moments and make the ₹250 experience feel worthwhile.
+
+The admin dashboard should provide a complete preview of how organisers will eventually manage registrations and verify payments.
+
+Preserve the existing visual identity, use #FF7A1A as the primary orange accent, and implement all three frontend experiences within the existing UXC-36 repository.
+
+Do not implement the backend in this phase.
+
+I want a complete, polished, responsive and maintainable frontend implementation, not just a design mockup or a theoretical plan.
