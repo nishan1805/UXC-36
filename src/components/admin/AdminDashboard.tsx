@@ -11,7 +11,7 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { EVENT_CONFIG } from "@/lib/event-config";
 import {
+  AdminSessionError,
   exportRegistrationsToCsv,
   registrationService,
   type PaymentStatus,
@@ -29,6 +30,7 @@ import {
 
 interface AdminDashboardProps {
   onLogout: () => void;
+  onSessionExpired: () => void;
 }
 
 type StatusFilter = "all" | PaymentStatus;
@@ -48,13 +50,15 @@ const STATUS_META: Record<PaymentStatus, { label: string; badgeClass: string }> 
   },
 };
 
-export function AdminDashboard({ onLogout }: AdminDashboardProps) {
+export function AdminDashboard({ onLogout, onSessionExpired }: AdminDashboardProps) {
   const [records, setRecords] = useState<RegistrationRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedRecord, setSelectedRecord] = useState<RegistrationRecord | null>(null);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const updatingLockRef = useRef(false);
 
   const showTemporaryNotice = useCallback((message: string) => {
     setNoticeMessage(message);
@@ -72,13 +76,17 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         if (notify) {
           showTemporaryNotice(`Loaded ${list.length} registration(s).`);
         }
-      } catch {
+      } catch (error) {
+        if (error instanceof AdminSessionError) {
+          onSessionExpired();
+          return;
+        }
         showTemporaryNotice("Unable to load registrations right now.");
       } finally {
         setIsLoading(false);
       }
     },
-    [showTemporaryNotice],
+    [onSessionExpired, showTemporaryNotice],
   );
 
   useEffect(() => {
@@ -110,19 +118,41 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   }, [records, searchQuery, statusFilter]);
 
   async function handleStatusChange(id: string, nextStatus: PaymentStatus) {
+    if (updatingLockRef.current) return;
+    const target = records.find((record) => record.id === id);
+    const label = target?.formattedParticipantNumber ?? "registration";
+    updatingLockRef.current = true;
+    setUpdatingId(id);
     try {
       await registrationService.updatePaymentStatus(id, nextStatus);
-      setRecords((prev) =>
-        prev.map((record) =>
-          record.id === id ? { ...record, paymentStatus: nextStatus } : record,
-        ),
-      );
-      setSelectedRecord((prev) =>
-        prev && prev.id === id ? { ...prev, paymentStatus: nextStatus } : prev,
-      );
-      showTemporaryNotice(`Updated ${id} to ${STATUS_META[nextStatus].label}.`);
-    } catch {
-      showTemporaryNotice(`Could not update payment status for ${id}.`);
+      try {
+        const list = await registrationService.listRegistrations();
+        setRecords(list);
+        setSelectedRecord((prev) => {
+          if (!prev || prev.id !== id) return prev;
+          return list.find((record) => record.id === id) ?? { ...prev, paymentStatus: nextStatus };
+        });
+      } catch (refreshError) {
+        if (refreshError instanceof AdminSessionError) throw refreshError;
+        setRecords((prev) =>
+          prev.map((record) =>
+            record.id === id ? { ...record, paymentStatus: nextStatus } : record,
+          ),
+        );
+        setSelectedRecord((prev) =>
+          prev && prev.id === id ? { ...prev, paymentStatus: nextStatus } : prev,
+        );
+      }
+      showTemporaryNotice(`Updated ${label} to ${STATUS_META[nextStatus].label}.`);
+    } catch (error) {
+      if (error instanceof AdminSessionError) {
+        onSessionExpired();
+        return;
+      }
+      showTemporaryNotice(`Could not update payment status for ${label}.`);
+    } finally {
+      updatingLockRef.current = false;
+      setUpdatingId(null);
     }
   }
 
@@ -380,12 +410,19 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             onClick={() => setSelectedRecord(record)}
                             className="inline-flex items-center gap-2 rounded-sm border-2 border-ink bg-background p-1 pr-2.5 text-xs font-bold text-ink transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-sand"
                           >
-                            <img
-                              src={record.screenshotUrl}
-                              alt={`Payment screenshot thumbnail for ${record.fullName}`}
-                              loading="lazy"
-                              className="h-9 w-7 rounded-[2px] border border-ink object-cover"
-                            />
+                            {record.screenshotUrl ? (
+                              <img
+                                src={record.screenshotUrl}
+                                alt={`Payment screenshot thumbnail for ${record.fullName}`}
+                                loading="lazy"
+                                className="h-9 w-7 rounded-[2px] border border-ink object-cover"
+                              />
+                            ) : (
+                              <span
+                                className="inline-block h-9 w-7 rounded-[2px] border border-ink bg-sand"
+                                aria-hidden="true"
+                              />
+                            )}
                             <span>Preview</span>
                           </button>
                         </td>
@@ -414,7 +451,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             <button
                               type="button"
                               onClick={() => void handleStatusChange(record.id, "verified")}
-                              disabled={record.paymentStatus === "verified"}
+                              disabled={
+                                record.paymentStatus === "verified" || updatingId === record.id
+                              }
                               className="inline-flex items-center gap-1 rounded-sm border-2 border-ink bg-emerald-200 px-2.5 py-1.5 text-xs font-extrabold text-ink hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-45"
                             >
                               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -423,7 +462,9 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             <button
                               type="button"
                               onClick={() => void handleStatusChange(record.id, "rejected")}
-                              disabled={record.paymentStatus === "rejected"}
+                              disabled={
+                                record.paymentStatus === "rejected" || updatingId === record.id
+                              }
                               className="inline-flex items-center gap-1 rounded-sm border-2 border-ink bg-red-200 px-2.5 py-1.5 text-xs font-extrabold text-ink hover:bg-red-300 disabled:cursor-not-allowed disabled:opacity-45"
                             >
                               <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
@@ -498,18 +539,27 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 </div>
 
                 <div className="flex justify-center rounded-sm border-[3px] border-ink bg-background p-4">
-                  <img
-                    src={selectedRecord.screenshotUrl}
-                    alt={`Payment proof for ${selectedRecord.fullName}`}
-                    className="max-h-[420px] w-auto rounded-sm object-contain"
-                  />
+                  {selectedRecord.screenshotUrl ? (
+                    <img
+                      src={selectedRecord.screenshotUrl}
+                      alt={`Payment proof for ${selectedRecord.fullName}`}
+                      className="max-h-[420px] w-auto rounded-sm object-contain"
+                    />
+                  ) : (
+                    <p className="py-8 text-sm font-semibold text-muted-foreground">
+                      Payment screenshot is unavailable.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-3 border-t-2 border-ink/15 pt-4">
                   <button
                     type="button"
                     onClick={() => void handleStatusChange(selectedRecord.id, "rejected")}
-                    disabled={selectedRecord.paymentStatus === "rejected"}
+                    disabled={
+                      selectedRecord.paymentStatus === "rejected" ||
+                      updatingId === selectedRecord.id
+                    }
                     className="pop-btn bg-red-200 px-4 py-2 text-xs text-ink disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <XCircle className="h-4 w-4" aria-hidden="true" />
@@ -518,7 +568,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <button
                     type="button"
                     onClick={() => void handleStatusChange(selectedRecord.id, "verified")}
-                    disabled={selectedRecord.paymentStatus === "verified"}
+                    disabled={
+                      selectedRecord.paymentStatus === "verified" ||
+                      updatingId === selectedRecord.id
+                    }
                     className="pop-btn bg-emerald-200 px-4 py-2 text-xs text-ink disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />

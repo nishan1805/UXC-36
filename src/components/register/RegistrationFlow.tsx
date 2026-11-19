@@ -7,7 +7,10 @@ import {
 import { RegistrationConfirmationPreview } from "@/components/register/RegistrationConfirmationPreview";
 import { ScreenshotUploadField } from "@/components/register/ScreenshotUploadField";
 import { UpiPaymentSection } from "@/components/register/UpiPaymentSection";
+import { EVENT_CONFIG } from "@/lib/event-config";
 import {
+  isRegistrationOpen,
+  isRegistrationsClosedError,
   registrationService,
   validateCity,
   validateFullName,
@@ -26,9 +29,11 @@ export function RegistrationFlow() {
   const [screenshotError, setScreenshotError] = useState<string | null>(null);
   const [submitSummaryError, setSubmitSummaryError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationClosed, setRegistrationClosed] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<RegistrationSubmissionResult | null>(
     null,
   );
+  const submitLockRef = useRef(false);
   const sectionRef = useRef<HTMLElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const pendingScrollRef = useRef<"confirmation" | "form" | null>(null);
@@ -73,6 +78,20 @@ export function RegistrationFlow() {
     };
   }, [submissionResult]);
 
+  useEffect(() => {
+    let cancelled = false;
+    void isRegistrationOpen()
+      .then((open) => {
+        if (!cancelled && !open) setRegistrationClosed(true);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled && isRegistrationsClosedError(error)) setRegistrationClosed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function handleFullNameBlur() {
     const trimmed = fullName.trim();
     if (trimmed !== fullName) setFullName(trimmed);
@@ -91,7 +110,7 @@ export function RegistrationFlow() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (submitLockRef.current || isSubmitting) return;
     setSubmitSummaryError(null);
 
     const trimmedName = fullName.trim();
@@ -118,6 +137,7 @@ export function RegistrationFlow() {
       return;
     }
 
+    submitLockRef.current = true;
     setIsSubmitting(true);
     try {
       const result = await registrationService.submitRegistration({
@@ -129,12 +149,17 @@ export function RegistrationFlow() {
       pendingScrollRef.current = "confirmation";
       setSubmissionResult(result);
     } catch (error) {
+      if (isRegistrationsClosedError(error)) {
+        setRegistrationClosed(true);
+        return;
+      }
       setSubmitSummaryError(
         error instanceof Error
           ? error.message
           : "Unable to complete registration. Please try again.",
       );
     } finally {
+      submitLockRef.current = false;
       setIsSubmitting(false);
     }
   }
@@ -161,6 +186,13 @@ export function RegistrationFlow() {
       <div className="mx-auto max-w-4xl px-5">
         {submissionResult ? (
           <RegistrationConfirmationPreview result={submissionResult} onReset={handleReset} />
+        ) : registrationClosed ? (
+          <div className="pop-card-static bg-cream p-6 sm:p-8" role="status" aria-live="polite">
+            <h2 className="font-display text-2xl text-ink sm:text-3xl">Registrations are closed</h2>
+            <p className="mt-2 text-sm font-semibold leading-relaxed text-muted-foreground sm:text-base">
+              Registration for {EVENT_CONFIG.upcomingEvent.name} is no longer open.
+            </p>
+          </div>
         ) : (
           <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-8">
             {/* Step 1: Personal Details Form (Strictly 3 fields) */}
