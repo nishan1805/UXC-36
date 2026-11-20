@@ -60,7 +60,7 @@ export const EVENT_CONFIG = {
   community: {
     name: "UX 36गढ़",
     shortMark: "36गढ़",
-    logoSrc: "/assets/aistudio/UXC_daef73dc.png",
+    logoSrc: "/assets/aistudio/UXC_6f84c107.png",
     tagline: "आ जाओ, let's design out loud",
     contactEmail: "uxchhattisgarh@gmail.com",
     region: "Chhattisgarh",
