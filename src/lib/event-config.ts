@@ -138,7 +138,7 @@ export const EVENT_CONFIG = {
     inkColor: "#380701",
     badgeLabel: "ATTENDING",
     subtitle: "UI UX Meetup",
-    venueLine1: "KURSI, G E",
+    venueLine1: "KURSI, GE",
     venueLine2: "ROAD, RAIPUR",
     dateLine1: "SUNDAY,",
     dateLine2: "29 NOV 2026",

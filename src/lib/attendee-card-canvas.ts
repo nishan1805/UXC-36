@@ -564,21 +564,21 @@ export async function renderAttendeeCardToJpegBlob(data: AttendeeCardRenderData)
   ctx.fillText(cityText, 114, 1466);
   ctx.restore();
 
-  // 10. Bottom-left cell: Location Pin icon + "KURSI, G E" / "ROAD, RAIPUR" (Jersey 15)
+  // 10. Bottom-left cell: Location Pin icon + "KURSI, GE" / "ROAD, RAIPUR" (Jersey 15)
   drawLocationPinIcon(ctx, 90, 1632, 152);
   drawOutlinedJerseyText(ctx, attendeeCard.venueLine1, 91, 1898, 78, 6.5, 420, 0.015);
   drawOutlinedJerseyText(ctx, attendeeCard.venueLine2, 91, 1962, 78, 6.5, 420, 0.015);
 
   // 11. Bottom-middle cell: Calendar icon + "SUNDAY," / "29 NOV 2026" (Jersey 15)
   drawCalendarIcon(ctx, 628, 1628, 152);
-  drawOutlinedJerseyText(ctx, attendeeCard.dateLine1, 629, 1894, 78, 6.5, 420, 0.015);
-  drawOutlinedJerseyText(ctx, attendeeCard.dateLine2, 629, 1958, 78, 6.5, 420, 0.015);
+  drawOutlinedJerseyText(ctx, attendeeCard.dateLine1, 629, 1898, 78, 6.5, 420, 0.015);
+  drawOutlinedJerseyText(ctx, attendeeCard.dateLine2, 629, 1962, 78, 6.5, 420, 0.015);
 
   // 12. Bottom-right cell: Actual unmodified white QR code + "Scan and Explore"
   const qrSize = 260;
   const qrCenterX = 1316;
   const qrX = Math.round(qrCenterX - qrSize / 2);
-  const qrY = 1640;
+  const qrY = 1632;
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 

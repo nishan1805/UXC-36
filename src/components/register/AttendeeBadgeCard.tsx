@@ -511,7 +511,7 @@ export function AttendeeBadgeCard({
           </div>
 
           {/* Bottom-Right Cell: Actual Unmodified White QR Code + "Scan and Explore" */}
-          <div className="absolute right-0 bottom-0 flex h-[23.93%] w-[28.91%] flex-col items-center justify-between px-[2.4cqw] pt-[4.9cqw] pb-[3.7cqw]">
+          <div className="absolute right-0 bottom-0 flex h-[23.93%] w-[28.91%] flex-col items-center justify-between px-[2.4cqw] pt-[4.5cqw] pb-[4.55cqw]">
             <img
               src={attendeeCard.qrImageSrc}
               alt={attendeeCard.qrImageAlt}
