@@ -128,19 +128,25 @@ export const EVENT_CONFIG = {
   },
 
   /**
-   * Personalized post-registration attendee card configuration.
-   * Uses official UX 36गढ़ logo accent (#F83F28) and unmodified uploaded QR code asset.
+   * Finalized personalized post-registration attendance card configuration.
+   * Uses official UX 36गढ़ brand red/coral (#F83F28), extracted artwork/wordmark,
+   * and the exact unmodified white QR code asset.
    */
   attendeeCard: {
-    accentColor: "#F83F28",
-    accentSoftColor: "#FFB3A7",
-    heading: "I'M ATTENDING!",
-    message: "Excited to connect with the design community of Chhattisgarh.",
-    qrImageSrc: "/assets/aistudio/adobe-express-qr-code__1__00a7b3db.png",
+    brandBgColor: "#F83F28",
+    creamColor: "#FFF7E2",
+    inkColor: "#380701",
+    badgeLabel: "ATTENDING",
+    subtitle: "UI UX Meetup",
+    venueLine1: "KURSI, G E",
+    venueLine2: "ROAD, RAIPUR",
+    dateLine1: "SUNDAY,",
+    dateLine2: "29 NOV 2026",
+    qrImageSrc: "/assets/card/qr-white.png",
     qrImageAlt: "Official QR code to explore UX 36गढ़",
-    qrLabel: "SCAN TO EXPLORE UXC",
-    communityMark: "UXC 36गढ़",
-    communitySublabel: "Chhattisgarh Design Community",
+    qrLabel: "Scan and Explore",
+    milaapWordmarkSrc: "/assets/card/milaap-wordmark.png",
+    rightArtworkSrc: "/assets/card/right-artwork.png",
   },
 
   /** Display ONLY these two verified community statistics on the homepage. */

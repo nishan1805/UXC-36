@@ -35,9 +35,10 @@ export function RegistrationConfirmationPreview({
         </div>
       </div>
 
-      {/* Personalized Event Attendance Card + 4 Action Buttons */}
+      {/* Personalized Event Attendance Card + Action Buttons */}
       <AttendeeBadgeCard
         attendeeName={result.participant.fullName}
+        attendeeCity={result.participant.city}
         participantNumber={result.formattedParticipantNumber}
         onRegisterAnother={onReset}
       />

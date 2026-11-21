@@ -37,6 +37,7 @@
   --color-brick: var(--brick);
   --font-display: "Archivo Black", "Noto Sans Devanagari", system-ui, sans-serif;
   --font-body: "Barlow", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-pixel: "Jersey 15", "Noto Sans Devanagari", monospace;
 }
 
 :root {
@@ -172,6 +173,15 @@
 @utility halftone {
   background-image: radial-gradient(var(--ink) 1.4px, transparent 1.5px);
   background-size: 10px 10px;
+}
+
+@utility card-pixel-text {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  font-synthesis-weight: none;
+  color: #fff7e2;
+  paint-order: stroke fill;
+  -webkit-text-fill-color: #fff7e2;
 }
 
 @utility marquee-track {

@@ -1,16 +1,216 @@
 import logoUrl from "@/assets/uxc-logo.png";
 import { EVENT_CONFIG } from "@/lib/event-config";
 
-const CARD_WIDTH = 1600;
-const CARD_HEIGHT = 900;
+const CARD_DESIGN_WIDTH_PT = 768;
+const CARD_WIDTH = 1536;
+const CARD_HEIGHT = 2048;
+
+/**
+ * Left-column name geometry in 768×1024 reference points:
+ * Left margin = 55pt, main vertical divider = 546pt, right safety gutter = 38pt.
+ * Safe text-measurement width = 442pt (leaves crisp room for outer stroke bleed
+ * so the final character never crosses the name area or touches the right artwork).
+ */
+export const CARD_NAME_SAFE_WIDTH_PT = 442;
+export const CARD_NAME_BASE_FONT_PT = 98;
+export const CARD_NAME_MIN_FONT_PT = 18;
+export const CARD_NAME_MAX_WORDS_PER_LINE = 2;
+const CARD_NAME_TRACKING_EM = 0.015;
+
+const PIXEL_FONT_FAMILY = '"Jersey 15", "Noto Sans Devanagari", monospace';
 
 const COLORS = {
-  white: "#FFFFFF",
-  ink: "#380701",
-  accent: EVENT_CONFIG.attendeeCard.accentColor, // #F83F28
-  accentSoft: EVENT_CONFIG.attendeeCard.accentSoftColor, // #FFB3A7
-  cream: "#FFF7E2",
+  bg: EVENT_CONFIG.attendeeCard.brandBgColor, // #F83F28
+  cream: EVENT_CONFIG.attendeeCard.creamColor, // #FFF7E2
+  ink: EVENT_CONFIG.attendeeCard.inkColor, // #380701
+  pillText: "#120401",
+  divider: "#FFFFFF",
 };
+
+export interface AttendeeCardRenderData {
+  nameLine1: string;
+  nameLine2: string;
+  city: string;
+}
+
+let cachedMeasureCtx: CanvasRenderingContext2D | null = null;
+
+function getMeasureContext(): CanvasRenderingContext2D | null {
+  if (typeof document === "undefined") return null;
+  if (!cachedMeasureCtx) {
+    const canvas = document.createElement("canvas");
+    cachedMeasureCtx = canvas.getContext("2d");
+  }
+  return cachedMeasureCtx;
+}
+
+function measureJerseyTextWidth(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  fontSizePx: number,
+  trackingEm = 0,
+): number {
+  if (!text) return 0;
+  ctx.font = `400 ${fontSizePx}px ${PIXEL_FONT_FAMILY}`;
+  const rawWidth = ctx.measureText(text).width;
+  const trackingExtra = Math.max(0, text.length - 1) * fontSizePx * trackingEm;
+  return rawWidth + trackingExtra;
+}
+
+function computeNameFontSizeForContext(
+  ctx: CanvasRenderingContext2D,
+  line1: string,
+  line2: string,
+  maxWidthPx: number,
+  baseFontPx: number,
+  minFontPx: number,
+): number {
+  const candidates = [line1.toUpperCase(), line2.toUpperCase()].filter((line) => line.length > 0);
+  if (candidates.length === 0) return baseFontPx;
+
+  const sampleSize = 100;
+  let widestAtSample = 0;
+  for (const line of candidates) {
+    const measured = measureJerseyTextWidth(ctx, line, sampleSize, CARD_NAME_TRACKING_EM);
+    if (measured > widestAtSample) widestAtSample = measured;
+  }
+
+  if (widestAtSample <= 0) return baseFontPx;
+
+  const fittedPx = (maxWidthPx * sampleSize) / widestAtSample;
+  const smoothPx = Math.floor(fittedPx * 2) / 2;
+  return Math.max(minFontPx, Math.min(baseFontPx, smoothPx));
+}
+
+/**
+ * Estimates a safe initial Jersey 15 font size (in 768pt card space) before canvas
+ * measurement runs (e.g. during SSR), then uses real Canvas 2D text-width measurement
+ * in the browser so both lines fit cleanly inside the full left section without clipping.
+ */
+export function estimateCardNameFontSizePt(line1: string, line2: string): number {
+  const longestLen = Math.max(line1.length, line2.length);
+  if (longestLen === 0) return CARD_NAME_BASE_FONT_PT;
+  const estimatedWidthAtBase = longestLen * CARD_NAME_BASE_FONT_PT * 0.45;
+  if (estimatedWidthAtBase <= CARD_NAME_SAFE_WIDTH_PT) return CARD_NAME_BASE_FONT_PT;
+  const scaled = (CARD_NAME_SAFE_WIDTH_PT / estimatedWidthAtBase) * CARD_NAME_BASE_FONT_PT;
+  return Math.max(CARD_NAME_MIN_FONT_PT, Math.floor(scaled));
+}
+
+export function measureCardNameFontSizePt(line1: string, line2: string): number {
+  const ctx = getMeasureContext();
+  if (!ctx) return estimateCardNameFontSizePt(line1, line2);
+  return computeNameFontSizeForContext(
+    ctx,
+    line1,
+    line2,
+    CARD_NAME_SAFE_WIDTH_PT,
+    CARD_NAME_BASE_FONT_PT,
+    CARD_NAME_MIN_FONT_PT,
+  );
+}
+
+export function ptToCardCqw(pt: number): number {
+  return Number(((pt / CARD_DESIGN_WIDTH_PT) * 100).toFixed(3));
+}
+
+/**
+ * Clamps a single card name line to at most CARD_NAME_MAX_WORDS_PER_LINE (2) words.
+ */
+export function clampCardNameLineToMaxWords(rawLine: string): string {
+  const words = rawLine.trim().toUpperCase().split(/\s+/).filter(Boolean);
+  return words.slice(0, CARD_NAME_MAX_WORDS_PER_LINE).join(" ");
+}
+
+/**
+ * Sanitizes live typing or pasting inside a single editable name line so participants
+ * can freely type, delete, and edit up to 2 words per line while preventing a 3rd word
+ * from being inserted and never auto-rearranging words across lines.
+ */
+export function sanitizeCardNameLineInput(nextRaw: string, prevValue: string): string {
+  const collapsed = nextRaw
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/ {2,}/g, " ")
+    .toUpperCase();
+  const words = collapsed.trim().split(" ").filter(Boolean);
+
+  if (words.length === 0) {
+    return "";
+  }
+
+  if (words.length === 1) {
+    const singleWord = words[0] ?? "";
+    if (collapsed.endsWith(" ")) {
+      return `${singleWord} `;
+    }
+    if (collapsed.startsWith(" ") && prevValue.includes(" ")) {
+      return ` ${singleWord}`;
+    }
+    return singleWord;
+  }
+
+  if (words.length === 2) {
+    return `${words[0] ?? ""} ${words[1] ?? ""}`;
+  }
+
+  // More than 2 words: if the user only inserted whitespace into an existing 2-word line
+  // (e.g. via a mobile keyboard that bypasses keydown), preserve the previous value
+  // intact instead of truncating the second word.
+  const prevWords = prevValue.trim().split(/\s+/).filter(Boolean);
+  const sameNonSpaceText =
+    nextRaw.replace(/\s+/g, "").toUpperCase() === prevValue.replace(/\s+/g, "").toUpperCase();
+  if (prevWords.length >= CARD_NAME_MAX_WORDS_PER_LINE && sameNonSpaceText) {
+    return prevValue;
+  }
+
+  return words.slice(0, CARD_NAME_MAX_WORDS_PER_LINE).join(" ");
+}
+
+/**
+ * Automatically distributes a participant's registered full name across two editable
+ * card lines while respecting the maximum of two words per line:
+ * - 1 word: [word1, ""]
+ * - 2 words: [word1, word2]
+ * - 3 words: [word1 + " " + word2, word3]
+ * - 4+ words: [word1 + " " + word2, word3 + " " + word4] (participants can shorten/rearrange directly on the card)
+ */
+export function splitNameIntoCardLines(rawName: string): [string, string] {
+  const normalized = rawName.trim().replace(/\s+/g, " ").toUpperCase();
+  if (!normalized) return ["", ""];
+
+  const words = normalized.split(" ").filter(Boolean);
+  const firstWord = words[0];
+  if (!firstWord) return ["", ""];
+
+  if (words.length === 1) {
+    return [firstWord, ""];
+  }
+
+  if (words.length === 2) {
+    return [firstWord, words[1] ?? ""];
+  }
+
+  const line1 = words.slice(0, CARD_NAME_MAX_WORDS_PER_LINE).join(" ");
+  const line2 = words
+    .slice(CARD_NAME_MAX_WORDS_PER_LINE, CARD_NAME_MAX_WORDS_PER_LINE * 2)
+    .join(" ");
+
+  return [line1, line2];
+}
+
+export function buildAttendeeCardFilename(
+  nameLine1: string,
+  nameLine2: string,
+  participantNumberLabel?: string,
+): string {
+  const numSlug = (participantNumberLabel ?? "").replace(/[^0-9]/g, "");
+  const combinedName = `${nameLine1} ${nameLine2}`.trim();
+  const nameSlug = combinedName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const parts = ["ux36garh-milaap-2026", numSlug, nameSlug || "attendee"].filter(Boolean);
+  return `${parts.join("-")}.jpg`;
+}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -44,52 +244,160 @@ function drawRoundedRectPath(
   ctx.closePath();
 }
 
-function wrapTextLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const words = text.trim().split(/\s+/);
-  const lines: string[] = [];
-  let current = "";
-
-  for (const word of words) {
-    const candidate = current ? `${current} ${word}` : word;
-    if (ctx.measureText(candidate).width <= maxWidth || !current) {
-      current = candidate;
-    } else {
-      lines.push(current);
-      current = word;
-    }
+function drawTrackedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  trackingPx: number,
+  mode: "stroke" | "fill",
+) {
+  if (!text) return;
+  if (trackingPx <= 0) {
+    if (mode === "stroke") ctx.strokeText(text, x, y);
+    else ctx.fillText(text, x, y);
+    return;
   }
-  if (current) lines.push(current);
-  return lines;
+
+  let cursorX = x;
+  for (const ch of text) {
+    if (mode === "stroke") ctx.strokeText(ch, cursorX, y);
+    else ctx.fillText(ch, cursorX, y);
+    cursorX += ctx.measureText(ch).width + trackingPx;
+  }
 }
 
-export function buildAttendeeCardFilename(
-  attendeeName: string,
-  participantNumberLabel?: string,
-): string {
-  const numSlug = (participantNumberLabel ?? "").replace(/[^0-9]/g, "");
-  const nameSlug = attendeeName
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const parts = ["ux36garh-milaap-2026", numSlug, nameSlug || "attendee"].filter(Boolean);
-  return `${parts.join("-")}.png`;
+function drawOutlinedJerseyText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  fontSize: number,
+  strokeWidth: number,
+  maxWidth?: number,
+  trackingEm = 0,
+) {
+  if (!text) return;
+
+  let activeSize = fontSize;
+  if (maxWidth) {
+    while (
+      measureJerseyTextWidth(ctx, text, activeSize, trackingEm) > maxWidth &&
+      activeSize > 24
+    ) {
+      activeSize -= 2;
+    }
+  }
+
+  ctx.font = `400 ${activeSize}px ${PIXEL_FONT_FAMILY}`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.lineJoin = "round";
+  ctx.miterLimit = 2;
+
+  const trackingPx = activeSize * trackingEm;
+  ctx.strokeStyle = COLORS.ink;
+  ctx.lineWidth = strokeWidth * (activeSize / fontSize);
+  drawTrackedText(ctx, text, x, y, trackingPx, "stroke");
+
+  ctx.fillStyle = COLORS.cream;
+  drawTrackedText(ctx, text, x, y, trackingPx, "fill");
+}
+
+function drawLocationPinIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  const s = size / 152;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+
+  // Dark brown trapezoid base shadow
+  ctx.beginPath();
+  ctx.moveTo(31, 102);
+  ctx.lineTo(121, 102);
+  ctx.quadraticCurveTo(127, 102, 130, 108);
+  ctx.lineTo(148, 140);
+  ctx.quadraticCurveTo(152, 148, 143, 148);
+  ctx.lineTo(9, 148);
+  ctx.quadraticCurveTo(0, 148, 4, 140);
+  ctx.lineTo(22, 108);
+  ctx.quadraticCurveTo(25, 102, 31, 102);
+  ctx.closePath();
+  ctx.fillStyle = COLORS.ink;
+  ctx.fill();
+
+  // Cream teardrop pin with dark brown outline
+  ctx.beginPath();
+  ctx.moveTo(76, 131);
+  ctx.bezierCurveTo(76, 131, 25, 86, 25, 51);
+  ctx.arc(76, 51, 51, Math.PI, 0, false);
+  ctx.bezierCurveTo(127, 86, 76, 131, 76, 131);
+  ctx.closePath();
+  ctx.fillStyle = COLORS.cream;
+  ctx.fill();
+  ctx.lineWidth = 4.5;
+  ctx.strokeStyle = COLORS.ink;
+  ctx.stroke();
+
+  // Inner dark brown hole
+  ctx.beginPath();
+  ctx.arc(76, 51, 16, 0, Math.PI * 2);
+  ctx.fillStyle = COLORS.ink;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawCalendarIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  const s = size / 152;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+
+  // Two top rounded tabs
+  ctx.fillStyle = COLORS.ink;
+  drawRoundedRectPath(ctx, 31, 2, 21, 34, 10.5);
+  ctx.fill();
+  drawRoundedRectPath(ctx, 100, 2, 21, 34, 10.5);
+  ctx.fill();
+
+  // Main cream rounded body
+  ctx.save();
+  drawRoundedRectPath(ctx, 3, 21, 146, 128, 20);
+  ctx.fillStyle = COLORS.cream;
+  ctx.fill();
+  ctx.clip();
+
+  // Solid dark brown header bar
+  ctx.fillStyle = COLORS.ink;
+  ctx.fillRect(0, 18, 152, 42);
+  ctx.restore();
+
+  // Crisp dark brown border around calendar body
+  drawRoundedRectPath(ctx, 3, 21, 146, 128, 20);
+  ctx.lineWidth = 4.5;
+  ctx.strokeStyle = COLORS.ink;
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 /**
- * Renders the personalized UX 36गढ़ MILAAP 2026 Attendance Card as a crisp 1600×900 PNG Blob.
- * Uses the official #F83F28 logo accent color, dynamic participant name, unique sequential
- * registration number (#001, #002, ...), and the exact unmodified uploaded QR code asset.
+ * Renders the finalized UX 36गढ़ MILAAP 2026 Attendance Card as a high-quality
+ * 1536×2048 (3:4 portrait) JPEG Blob using the exact Jersey 15 typography and
+ * real text-width measurement matching the uploaded Shareable Card reference.
  */
-export async function renderAttendeeCardToBlob(
-  attendeeName: string,
-  participantNumberLabel: string,
-): Promise<Blob> {
+export async function renderAttendeeCardToJpegBlob(data: AttendeeCardRenderData): Promise<Blob> {
   if (typeof document === "undefined") {
     throw new Error("Canvas rendering requires a browser environment.");
   }
 
-  if (document.fonts && typeof document.fonts.ready !== "undefined") {
+  if (document.fonts) {
+    await Promise.allSettled([
+      document.fonts.load('400 76px "Jersey 15"'),
+      document.fonts.load('400 196px "Jersey 15"'),
+      document.fonts.load('500 58px "Barlow"'),
+      document.fonts.load('400 37px "Barlow"'),
+    ]);
     await document.fonts.ready;
   }
 
@@ -102,308 +410,195 @@ export async function renderAttendeeCardToBlob(
   }
 
   const { attendeeCard } = EVENT_CONFIG;
-  const displayName = attendeeName.trim() || "UX 36गढ़ Member";
-  const badgeNumber = participantNumberLabel.trim();
+  const line1 = clampCardNameLineToMaxWords(data.nameLine1);
+  const line2 = clampCardNameLineToMaxWords(data.nameLine2);
+  const cityText = (data.city.trim() || "RAIPUR").toUpperCase();
 
-  // 1. Crisp white card background
-  ctx.fillStyle = COLORS.white;
+  // Preload all visual assets in parallel
+  const [uxcLogoImg, milaapImg, artworkImg, qrImg] = await Promise.all([
+    loadImage(logoUrl).catch(() => null),
+    loadImage(attendeeCard.milaapWordmarkSrc).catch(() => null),
+    loadImage(attendeeCard.rightArtworkSrc).catch(() => null),
+    loadImage(attendeeCard.qrImageSrc),
+  ]);
+
+  // 1. Official #F83F28 coral-red background
+  ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
 
-  // 2. Decorative corner geometric accents (#F83F28 & harmonious soft coral)
-  // Top-right soft companion pill
-  ctx.save();
-  ctx.translate(1205, -25);
-  ctx.rotate((30 * Math.PI) / 180);
-  drawRoundedRectPath(ctx, -40, -10, 82, 230, 41);
-  ctx.fillStyle = COLORS.accentSoft;
-  ctx.fill();
-  ctx.restore();
-
-  // Top-right primary #F83F28 geometric wedge
-  ctx.save();
-  ctx.translate(1410, -45);
-  ctx.rotate((-24 * Math.PI) / 180);
-  drawRoundedRectPath(ctx, -180, -30, 440, 210, 48);
-  ctx.fillStyle = COLORS.accent;
-  ctx.fill();
-  ctx.restore();
-
-  // Bottom-left soft companion pill
-  ctx.save();
-  ctx.translate(295, 915);
-  ctx.rotate((-32 * Math.PI) / 180);
-  drawRoundedRectPath(ctx, -60, -125, 120, 250, 26);
-  ctx.fillStyle = COLORS.accentSoft;
-  ctx.fill();
-  ctx.restore();
-
-  // Bottom-left primary #F83F28 geometric wedge
-  ctx.save();
-  ctx.translate(75, 920);
-  ctx.rotate((-24 * Math.PI) / 180);
-  drawRoundedRectPath(ctx, -190, -145, 390, 230, 40);
-  ctx.fillStyle = COLORS.accent;
-  ctx.fill();
-  ctx.restore();
-
-  // Bottom-right 5x3 #F83F28 dot matrix
-  ctx.fillStyle = COLORS.accent;
-  const dotStartX = 1445;
-  const dotStartY = 824;
-  const dotGapX = 24;
-  const dotGapY = 24;
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 5; col++) {
-      ctx.beginPath();
-      ctx.arc(dotStartX + col * dotGapX, dotStartY + row * dotGapY, 5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  // 3. Top-Left Branding Lockup
-  const badgeX = 84;
-  const badgeY = 66;
-  const badgeSize = 174;
-  drawRoundedRectPath(ctx, badgeX, badgeY, badgeSize, badgeSize, 36);
-  ctx.fillStyle = COLORS.accent;
-  ctx.fill();
-
-  try {
-    const logoImg = await loadImage(logoUrl);
-    const maxLogoW = 132;
-    const maxLogoH = 92;
-    const scale = Math.min(maxLogoW / logoImg.naturalWidth, maxLogoH / logoImg.naturalHeight);
-    const drawW = logoImg.naturalWidth * scale;
-    const drawH = logoImg.naturalHeight * scale;
+  // 2. Right-column decorative stippled artwork (x=1094..1536, y=0..1556)
+  if (artworkImg) {
+    const targetX = 1094;
+    const targetY = 2;
+    const targetW = CARD_WIDTH - targetX;
+    const targetH = 1554;
+    const scale = Math.min(targetW / artworkImg.naturalWidth, targetH / artworkImg.naturalHeight);
+    const drawW = artworkImg.naturalWidth * scale;
+    const drawH = artworkImg.naturalHeight * scale;
     ctx.drawImage(
-      logoImg,
-      badgeX + (badgeSize - drawW) / 2,
-      badgeY + 28 + (maxLogoH - drawH) / 2,
+      artworkImg,
+      targetX + (targetW - drawW) / 2,
+      targetY + (targetH - drawH) / 2,
       drawW,
       drawH,
     );
-  } catch {
-    ctx.fillStyle = COLORS.white;
-    ctx.font = '900 54px "Archivo Black", sans-serif';
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("UXC", badgeX + badgeSize / 2, badgeY + 74);
   }
 
-  // "36गढ़" inside #F83F28 icon badge
-  ctx.fillStyle = COLORS.white;
-  ctx.font = '900 28px "Barlow", "Noto Sans Devanagari", sans-serif';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-  ctx.fillText("36गढ़", badgeX + badgeSize / 2, badgeY + badgeSize - 22);
+  // 3. Crisp white architectural grid dividers (exact PDF positions scaled 2x)
+  ctx.fillStyle = COLORS.divider;
+  ctx.fillRect(0, 211, 1093, 2.5);
+  ctx.fillRect(1091, 0, 2.5, CARD_HEIGHT);
+  ctx.fillRect(0, 1557, CARD_WIDTH, 2.5);
+  ctx.fillRect(551, 1558, 2.5, CARD_HEIGHT - 1558);
 
-  // Vertical #F83F28 divider line
-  drawRoundedRectPath(ctx, 296, 84, 10, 138, 5);
-  ctx.fillStyle = COLORS.accent;
+  // 4. Top-left official UXC 3D logo
+  if (uxcLogoImg) {
+    const maxW = 148;
+    const maxH = 122;
+    const scale = Math.min(maxW / uxcLogoImg.naturalWidth, maxH / uxcLogoImg.naturalHeight);
+    const drawW = uxcLogoImg.naturalWidth * scale;
+    const drawH = uxcLogoImg.naturalHeight * scale;
+    ctx.drawImage(uxcLogoImg, 108, 49 + (maxH - drawH) / 2, drawW, drawH);
+  }
+
+  // 5. "ATTENDING" 3D layered pill badge (Jersey 15)
+  const pillX = 110;
+  const pillY = 372;
+  const pillW = 314;
+  const pillH = 104;
+  const pillR = 22;
+
+  drawRoundedRectPath(ctx, pillX, pillY + 18, pillW, pillH, pillR);
+  ctx.fillStyle = COLORS.ink;
   ctx.fill();
 
-  // Stacked event title: UX 36गढ़ / MILAAP 2026
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  ctx.fillStyle = COLORS.ink;
-  ctx.font = '900 66px "Archivo Black", "Noto Sans Devanagari", sans-serif';
-  ctx.fillText("UX 36गढ़", 342, 144);
+  drawRoundedRectPath(ctx, pillX, pillY + 10, pillW, pillH, pillR);
+  ctx.fillStyle = COLORS.bg;
+  ctx.fill();
 
-  const milaapY = 216;
-  ctx.fillStyle = COLORS.ink;
-  ctx.font = '900 72px "Archivo Black", "Noto Sans Devanagari", sans-serif';
-  const milaapText = "MILAAP ";
-  ctx.fillText(milaapText, 342, milaapY);
-  const milaapWidth = ctx.measureText(milaapText).width;
-  ctx.fillStyle = COLORS.accent;
-  ctx.fillText("2026", 342 + milaapWidth - 6, milaapY);
-
-  // 4. Left Column — "I'M ATTENDING!" Slanted 3D Headline + Burst Rays
-  const attendingX = 96;
-  const attendingY = 392;
-  ctx.save();
-  ctx.translate(attendingX, attendingY);
-  ctx.transform(1, 0, -0.16, 1, 0, 0);
-  ctx.font = '900 84px "Archivo Black", sans-serif';
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  ctx.lineJoin = "round";
-
-  // Outer #F83F28 hard shadow
-  ctx.fillStyle = COLORS.accent;
-  ctx.strokeStyle = COLORS.accent;
-  ctx.lineWidth = 10;
-  ctx.strokeText(attendeeCard.heading, 10, 14);
-  ctx.fillText(attendeeCard.heading, 10, 14);
-
-  // Mid dark brown hard shadow
-  ctx.fillStyle = COLORS.ink;
-  ctx.strokeStyle = COLORS.ink;
-  ctx.lineWidth = 10;
-  ctx.strokeText(attendeeCard.heading, 4, 6);
-  ctx.fillText(attendeeCard.heading, 4, 6);
-
-  // Cream foreground with crisp dark brown outline
-  ctx.strokeStyle = COLORS.ink;
-  ctx.lineWidth = 8;
-  ctx.strokeText(attendeeCard.heading, 0, 0);
+  drawRoundedRectPath(ctx, pillX, pillY, pillW, pillH, pillR);
   ctx.fillStyle = COLORS.cream;
-  ctx.fillText(attendeeCard.heading, 0, 0);
-  ctx.restore();
-
-  // Three #F83F28 comic burst rays above "!"
-  const drawRay = (cx: number, cy: number, angleDeg: number, length: number, width: number) => {
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate((angleDeg * Math.PI) / 180);
-    drawRoundedRectPath(ctx, -width / 2, -length / 2, width, length, width / 2);
-    ctx.fillStyle = COLORS.accent;
-    ctx.fill();
-    ctx.restore();
-  };
-  drawRay(898, 260, 4, 38, 13);
-  drawRay(934, 272, 34, 42, 13);
-  drawRay(954, 302, 68, 34, 13);
-
-  // 5. Dynamic Sequential Participant Number Pill (#001, #002, ...) right above/beside attendee name
-  let nameAreaTopY = 534;
-  if (badgeNumber) {
-    ctx.font = '900 32px "Archivo Black", "Barlow", sans-serif';
-    const numTextWidth = ctx.measureText(badgeNumber).width;
-    const pillW = Math.max(122, Math.ceil(numTextWidth + 44));
-    const pillH = 52;
-    const pillX = 94;
-    const pillY = 434;
-
-    // Dark brown crisp hard offset shadow under participant number badge
-    drawRoundedRectPath(ctx, pillX + 5, pillY + 5, pillW, pillH, 12);
-    ctx.fillStyle = COLORS.ink;
-    ctx.fill();
-
-    drawRoundedRectPath(ctx, pillX, pillY, pillW, pillH, 12);
-    ctx.fillStyle = COLORS.accent;
-    ctx.fill();
-    ctx.strokeStyle = COLORS.ink;
-    ctx.lineWidth = 4;
-    ctx.stroke();
-
-    ctx.fillStyle = COLORS.white;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(badgeNumber, pillX + pillW / 2, pillY + pillH / 2 + 1);
-    nameAreaTopY = 574;
-  }
-
-  // 6. Dynamic Attendee Name (auto-scaled so long names never overflow into QR column)
-  const maxNameWidth = 850;
-  let nameFontSize = 90;
-  ctx.font = `900 ${nameFontSize}px "Barlow", "Noto Sans Devanagari", sans-serif`;
-  while (ctx.measureText(displayName).width > maxNameWidth && nameFontSize > 48) {
-    nameFontSize -= 4;
-    ctx.font = `900 ${nameFontSize}px "Barlow", "Noto Sans Devanagari", sans-serif`;
-  }
-
-  const nameLines = wrapTextLines(ctx, displayName, maxNameWidth).slice(0, 2);
-  ctx.fillStyle = COLORS.ink;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  const nameStartY = nameLines.length > 1 ? nameAreaTopY - 26 : nameAreaTopY;
-  const nameLineHeight = Math.round(nameFontSize * 1.06);
-  nameLines.forEach((line, idx) => {
-    ctx.fillText(line, 92, nameStartY + idx * nameLineHeight);
-  });
-
-  // Horizontal #F83F28 accent pill bar directly under name
-  const barY = nameStartY + (nameLines.length - 1) * nameLineHeight + 24;
-  drawRoundedRectPath(ctx, 94, barY, 244, 13, 6.5);
-  ctx.fillStyle = COLORS.accent;
   ctx.fill();
-
-  // 7. Personalized Message with Vertical #F83F28 Bar
-  const msgY = Math.max(barY + 46, 660);
-  drawRoundedRectPath(ctx, 88, msgY, 11, 102, 5.5);
-  ctx.fillStyle = COLORS.accent;
-  ctx.fill();
-
-  ctx.fillStyle = COLORS.ink;
-  ctx.font = '700 38px "Barlow", "Noto Sans Devanagari", sans-serif';
-  const msgLines = wrapTextLines(ctx, attendeeCard.message, 740);
-  msgLines.forEach((line, idx) => {
-    ctx.fillText(line, 128, msgY + 38 + idx * 50);
-  });
-
-  // 8. Right Column — Rounded QR Card Frame with Hard Dark Brown Shadow
-  const qrCardX = 1032;
-  const qrCardY = 192;
-  const qrCardW = 446;
-  const qrCardH = 468;
-  const qrRadius = 34;
-
-  // Hard offset dark brown shadow
-  drawRoundedRectPath(ctx, qrCardX + 16, qrCardY + 18, qrCardW, qrCardH, qrRadius);
-  ctx.fillStyle = COLORS.ink;
-  ctx.fill();
-
-  // Card body (clipped)
-  ctx.save();
-  drawRoundedRectPath(ctx, qrCardX, qrCardY, qrCardW, qrCardH, qrRadius);
-  ctx.fillStyle = COLORS.white;
-  ctx.fill();
-  ctx.clip();
-
-  // Bottom #F83F28 strip inside QR card
-  const bannerH = 82;
-  ctx.fillStyle = COLORS.accent;
-  ctx.fillRect(qrCardX, qrCardY + qrCardH - bannerH, qrCardW, bannerH);
-
-  // "SCAN TO EXPLORE UXC" label inside #F83F28 strip
-  ctx.fillStyle = COLORS.white;
-  ctx.font = '900 28px "Barlow", "Archivo Black", sans-serif';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(attendeeCard.qrLabel, qrCardX + qrCardW / 2, qrCardY + qrCardH - bannerH / 2 + 1);
-
-  // Unmodified uploaded QR code image (preserving exact original aspect ratio & scannability)
-  const qrAreaTop = qrCardY + 20;
-  const qrAreaHeight = qrCardH - bannerH - 40;
-  const qrAreaWidth = qrCardW - 44;
-
-  const qrImg = await loadImage(attendeeCard.qrImageSrc);
-  const scale = Math.min(qrAreaWidth / qrImg.naturalWidth, qrAreaHeight / qrImg.naturalHeight);
-  const drawW = qrImg.naturalWidth * scale;
-  const drawH = qrImg.naturalHeight * scale;
-  const drawX = qrCardX + (qrCardW - drawW) / 2;
-  const drawY = qrAreaTop + (qrAreaHeight - drawH) / 2;
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(qrImg, drawX, drawY, drawW, drawH);
-  ctx.imageSmoothingEnabled = true;
-
-  ctx.restore();
-
-  // Crisp dark brown outline around QR card
-  drawRoundedRectPath(ctx, qrCardX, qrCardY, qrCardW, qrCardH, qrRadius);
+  ctx.lineWidth = 3.5;
   ctx.strokeStyle = COLORS.ink;
-  ctx.lineWidth = 5;
   ctx.stroke();
 
-  // 9. Community Caption Directly Below QR Card
-  const captionCenterX = qrCardX + qrCardW / 2;
-  ctx.fillStyle = COLORS.ink;
+  ctx.fillStyle = COLORS.pillText;
+  ctx.font = `400 76px ${PIXEL_FONT_FAMILY}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(attendeeCard.badgeLabel, pillX + pillW / 2, pillY + pillH / 2 + 2);
+
+  // 6. Large 3D "MILAAP" display wordmark
+  if (milaapImg) {
+    const targetW = 910;
+    const targetH = (milaapImg.naturalHeight / milaapImg.naturalWidth) * targetW;
+    ctx.drawImage(milaapImg, 108, 566, targetW, targetH);
+  }
+
+  // 7. "UI UX Meetup" subtitle (Jersey 15)
+  drawOutlinedJerseyText(ctx, attendeeCard.subtitle, 112, 928, 116, 8, 900, 0.01);
+
+  // 8. Dynamic Participant Name (2 editable lines, Jersey 15, full left-column width,
+  // auto-fitted strictly inside the left section using real text-width measurement)
+  const nameMaxWidthPx = CARD_NAME_SAFE_WIDTH_PT * 2; // 884px inside 1091px left column
+  const baseNameFontPx = CARD_NAME_BASE_FONT_PT * 2; // 196px
+  const minNameFontPx = CARD_NAME_MIN_FONT_PT * 2; // 36px
+
+  const nameFontPx = computeNameFontSizeForContext(
+    ctx,
+    line1,
+    line2,
+    nameMaxWidthPx,
+    baseNameFontPx,
+    minNameFontPx,
+  );
+  const nameStrokePx = Math.max(4, Math.round(10 * (nameFontPx / baseNameFontPx)));
+  const nameLineStepPx = Math.round(nameFontPx * 0.69);
+
+  // Anchor bottom of the 2-line block cleanly above the participant city at y=1458
+  const line2BaselineY = 1390;
+  const line1BaselineY = line2BaselineY - nameLineStepPx;
+
+  // Clip strictly to the left panel as a final guarantee against ever touching the right artwork
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 960, 1086, 594);
+  ctx.clip();
+
+  if (line1) {
+    drawOutlinedJerseyText(
+      ctx,
+      line1,
+      112,
+      line1BaselineY,
+      nameFontPx,
+      nameStrokePx,
+      nameMaxWidthPx,
+      CARD_NAME_TRACKING_EM,
+    );
+  }
+  if (line2) {
+    drawOutlinedJerseyText(
+      ctx,
+      line2,
+      112,
+      line2BaselineY,
+      nameFontPx,
+      nameStrokePx,
+      nameMaxWidthPx,
+      CARD_NAME_TRACKING_EM,
+    );
+  }
+
+  // 9. Dynamic Participant City directly below name
+  let cityFontSize = 58;
+  ctx.font = `500 ${cityFontSize}px "Barlow", "Noto Sans Devanagari", sans-serif`;
+  while (ctx.measureText(cityText).width > nameMaxWidthPx && cityFontSize > 28) {
+    cityFontSize -= 2;
+    ctx.font = `500 ${cityFontSize}px "Barlow", "Noto Sans Devanagari", sans-serif`;
+  }
+  ctx.fillStyle = COLORS.cream;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText(cityText, 114, 1466);
+  ctx.restore();
+
+  // 10. Bottom-left cell: Location Pin icon + "KURSI, G E" / "ROAD, RAIPUR" (Jersey 15)
+  drawLocationPinIcon(ctx, 90, 1632, 152);
+  drawOutlinedJerseyText(ctx, attendeeCard.venueLine1, 91, 1898, 78, 6.5, 420, 0.015);
+  drawOutlinedJerseyText(ctx, attendeeCard.venueLine2, 91, 1962, 78, 6.5, 420, 0.015);
+
+  // 11. Bottom-middle cell: Calendar icon + "SUNDAY," / "29 NOV 2026" (Jersey 15)
+  drawCalendarIcon(ctx, 628, 1628, 152);
+  drawOutlinedJerseyText(ctx, attendeeCard.dateLine1, 629, 1894, 78, 6.5, 420, 0.015);
+  drawOutlinedJerseyText(ctx, attendeeCard.dateLine2, 629, 1958, 78, 6.5, 420, 0.015);
+
+  // 12. Bottom-right cell: Actual unmodified white QR code + "Scan and Explore"
+  const qrSize = 260;
+  const qrCenterX = 1316;
+  const qrX = Math.round(qrCenterX - qrSize / 2);
+  const qrY = 1640;
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+  ctx.fillStyle = COLORS.cream;
+  ctx.font = '400 37px "Barlow", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
-  ctx.font = '900 44px "Archivo Black", "Noto Sans Devanagari", sans-serif';
-  ctx.fillText(attendeeCard.communityMark, captionCenterX, 742);
-
-  ctx.font = '600 24px "Barlow", sans-serif';
-  ctx.fillText(attendeeCard.communitySublabel, captionCenterX, 780);
+  ctx.fillText(attendeeCard.qrLabel, qrCenterX, 1962);
 
   return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error("Could not export attendance card PNG."));
-      }
-    }, "image/png");
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Could not export attendance card JPEG."));
+        }
+      },
+      "image/jpeg",
+      0.95,
+    );
   });
 }
