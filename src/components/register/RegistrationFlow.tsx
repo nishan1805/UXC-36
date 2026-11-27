@@ -7,10 +7,7 @@ import {
 import { RegistrationConfirmationPreview } from "@/components/register/RegistrationConfirmationPreview";
 import { ScreenshotUploadField } from "@/components/register/ScreenshotUploadField";
 import { UpiPaymentSection } from "@/components/register/UpiPaymentSection";
-import { EVENT_CONFIG } from "@/lib/event-config";
 import {
-  isRegistrationOpen,
-  isRegistrationsClosedError,
   registrationService,
   validateCity,
   validateFullName,
@@ -29,7 +26,6 @@ export function RegistrationFlow() {
   const [screenshotError, setScreenshotError] = useState<string | null>(null);
   const [submitSummaryError, setSubmitSummaryError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [registrationClosed, setRegistrationClosed] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<RegistrationSubmissionResult | null>(
     null,
   );
@@ -77,20 +73,6 @@ export function RegistrationFlow() {
       window.cancelAnimationFrame(raf2);
     };
   }, [submissionResult]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void isRegistrationOpen()
-      .then((open) => {
-        if (!cancelled && !open) setRegistrationClosed(true);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled && isRegistrationsClosedError(error)) setRegistrationClosed(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   function handleFullNameBlur() {
     const trimmed = fullName.trim();
@@ -149,10 +131,6 @@ export function RegistrationFlow() {
       pendingScrollRef.current = "confirmation";
       setSubmissionResult(result);
     } catch (error) {
-      if (isRegistrationsClosedError(error)) {
-        setRegistrationClosed(true);
-        return;
-      }
       setSubmitSummaryError(
         error instanceof Error
           ? error.message
@@ -186,13 +164,6 @@ export function RegistrationFlow() {
       <div className="mx-auto max-w-4xl px-5">
         {submissionResult ? (
           <RegistrationConfirmationPreview result={submissionResult} onReset={handleReset} />
-        ) : registrationClosed ? (
-          <div className="pop-card-static bg-cream p-6 sm:p-8" role="status" aria-live="polite">
-            <h2 className="font-display text-2xl text-ink sm:text-3xl">Registrations are closed</h2>
-            <p className="mt-2 text-sm font-semibold leading-relaxed text-muted-foreground sm:text-base">
-              Registration for {EVENT_CONFIG.upcomingEvent.name} is no longer open.
-            </p>
-          </div>
         ) : (
           <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-8">
             {/* Step 1: Personal Details Form (Strictly 3 fields) */}
