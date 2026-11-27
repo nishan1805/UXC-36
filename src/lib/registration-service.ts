@@ -163,10 +163,6 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-export function isRegistrationsClosedError(error: unknown): boolean {
-  return error instanceof Error && /registrations closed/i.test(error.message);
-}
-
 function errorText(error: QueryErrorLike): string {
   return [error.message, error.details, error.hint].filter(Boolean).join(" ");
 }
@@ -282,15 +278,6 @@ function screenshotContentType(ext: ScreenshotExt): string {
 async function requireAdminSession(): Promise<void> {
   const allowed = await getAdminSession();
   if (!allowed) throw new AdminSessionError();
-}
-
-export async function isRegistrationOpen(): Promise<boolean> {
-  const { data, error } = await supabase.rpc("registration_open");
-  if (error) {
-    if (/registrations closed/i.test(errorText(error))) return false;
-    throw new Error("Could not check whether registrations are open.");
-  }
-  return data === true;
 }
 
 export async function adminSignIn(email: string, password: string): Promise<void> {
